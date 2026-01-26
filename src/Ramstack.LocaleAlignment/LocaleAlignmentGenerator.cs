@@ -8,10 +8,9 @@ namespace Ramstack.LocaleAlignment;
 [Generator]
 file sealed class LocaleAlignmentGenerator : IIncrementalGenerator
 {
-    public void Initialize(IncrementalGeneratorInitializationContext context)
-    {
+    /// <inheritdoc />
+    public void Initialize(IncrementalGeneratorInitializationContext context) =>
         context.RegisterPostInitializationOutput(GenerateLocaleInitializer);
-    }
 
     private static void GenerateLocaleInitializer(IncrementalGeneratorPostInitializationContext context)
     {

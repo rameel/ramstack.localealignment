@@ -5,7 +5,7 @@
     <Description>Source generator that applies POSIX locale user overrides to .NET CultureInfo on Unix-like systems.</Description>
     <Nullable>enable</Nullable>
     <ImplicitUsings>true</ImplicitUsings>
-    <LangVersion>Latest</LangVersion>
+    <LangVersion>latest</LangVersion>
     <Deterministic>true</Deterministic>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <IsRoslynComponent>true</IsRoslynComponent>
