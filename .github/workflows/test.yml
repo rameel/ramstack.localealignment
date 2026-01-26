@@ -2,12 +2,13 @@ name: Build & Test
 
 on:
   pull_request:
-    branches: [opened, synchronize, reopened, ready_for_review]
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
 
 jobs:
   build-and-test:
     if: ${{ !github.event.pull_request.draft }}
-    name: Built & Test
+    name: 'Build & Test'
     runs-on: ubuntu-latest
 
     steps:
