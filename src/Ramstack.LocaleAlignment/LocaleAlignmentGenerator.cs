@@ -8,10 +8,9 @@ namespace Ramstack.LocaleAlignment;
 [Generator]
 file sealed class LocaleAlignmentGenerator : IIncrementalGenerator
 {
-    public void Initialize(IncrementalGeneratorInitializationContext context)
-    {
+    /// <inheritdoc />
+    public void Initialize(IncrementalGeneratorInitializationContext context) =>
         context.RegisterPostInitializationOutput(GenerateLocaleInitializer);
-    }
 
     private static void GenerateLocaleInitializer(IncrementalGeneratorPostInitializationContext context)
     {
@@ -213,9 +212,16 @@ file sealed class LocaleAlignmentGenerator : IIncrementalGenerator
                             }
                         }
 
+                        #if NET8_0_OR_GREATER
                         buffer.Replace('_', '-');
-                        posix = new string(buffer);
+                        #else
+                        for (var i = 0; i < buffer.Length; i++)
+                            if (buffer[i] == '_')
+                                buffer[i] = '-';
+                        #endif
 
+                        // create string
+                        posix = new string(buffer);
                         return posix;
                     }
 
