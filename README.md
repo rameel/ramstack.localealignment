@@ -4,7 +4,7 @@
 
 A Roslyn source generator that applies POSIX locale user overrides to .NET `CultureInfo` on Unix-like systems.
 
-![](assets/screenshot.png)
+![](https://github.com/rameel/ramstack.localealignment/blob/main/assets/screenshot.png)
 
 ## Problem
 On Unix platforms, .NET determines the process culture using a limited subset of locale-related environment variables,
