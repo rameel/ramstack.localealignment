@@ -78,5 +78,5 @@ The generated initializer runs automatically at module load time.
 Bug reports and contributions are welcome.
 
 ## License
-This package is released as open source under the **MIT License**.
+This package is released as open source under the **MIT License**.<br />
 See the [LICENSE](https://github.com/rameel/ramstack.localealignment/blob/main/LICENSE) file for more details.
