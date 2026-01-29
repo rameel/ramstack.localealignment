@@ -1,13 +1,36 @@
 ﻿namespace Ramstack.LocaleAlignment;
 
-internal static class LocaleAlignment
+/// <summary>
+/// Provides helpers for applying POSIX locale settings to .NET culture on Unix-like systems.
+/// </summary>
+/// <remarks>
+/// On Unix-like systems, .NET determines the process culture using only a subset
+/// of locale-related environment variables (LC_ALL, LC_MESSAGES, LANG).
+/// Category-specific overrides such as LC_NUMERIC, LC_TIME, and LC_MONETARY
+/// are not applied during <see cref="CultureInfo"/> initialization.
+/// </remarks>
+public static class LocaleAlignment
 {
-    [ModuleInitializer]
+    private static int s_initialized;
+
+    /// <summary>
+    /// Applies POSIX locale overrides (LC_NUMERIC, LC_TIME, LC_MONETARY).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Call this method as early as possible during application startup,
+    /// before any culture-sensitive code runs.
+    /// </para>
+    /// <para>
+    /// It has no effect on Windows or in globalization-invariant mode.
+    /// </para>
+    /// </remarks>
     public static void Apply()
     {
         try
         {
-            ApplyCore();
+            if (Interlocked.Exchange(ref s_initialized, 1) == 0)
+                ApplyCore();
         }
         catch
         {
@@ -17,6 +40,7 @@ internal static class LocaleAlignment
 
     private static void ApplyCore()
     {
+        Console.WriteLine("ApplyCore");
         if (!OperatingSystem.IsWindows() && !IsGlobalizationInvariant())
         {
             //

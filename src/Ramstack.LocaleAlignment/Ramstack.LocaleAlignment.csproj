@@ -24,13 +24,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <NoWarn>$(NoWarn);CA2255</NoWarn>
-  </PropertyGroup>
-
   <ItemGroup>
     <Using Include="System.Globalization" />
-    <Using Include="System.Runtime.CompilerServices" />
   </ItemGroup>
 
   <ItemGroup>
