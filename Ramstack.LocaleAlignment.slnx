@@ -7,6 +7,7 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Ramstack.LocaleAlignment/Ramstack.LocaleAlignment.csproj" />
+    <Project Path="src/Ramstack.LocaleAlignment.Generator/Ramstack.LocaleAlignment.Generator.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Ramstack.LocaleAlignment.Tests/Ramstack.LocaleAlignment.Tests.csproj" />

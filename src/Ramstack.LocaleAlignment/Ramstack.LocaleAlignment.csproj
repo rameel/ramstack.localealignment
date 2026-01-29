@@ -1,17 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <Description>Source generator that applies POSIX locale user overrides to .NET CultureInfo on Unix-like systems.</Description>
+    <TargetFramework>net6.0</TargetFramework>
+    <Description>Applies POSIX locale user overrides to .NET CultureInfo on Unix-like systems.</Description>
     <Nullable>enable</Nullable>
     <ImplicitUsings>true</ImplicitUsings>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>preview</LangVersion>
     <Deterministic>true</Deterministic>
-    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-    <IsRoslynComponent>true</IsRoslynComponent>
-    <PackageType>Analyzer</PackageType>
-    <IncludeBuildOutput>true</IncludeBuildOutput>
-    <BuildOutputTargetFolder>analyzers/dotnet/cs</BuildOutputTargetFolder>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -20,21 +15,20 @@
     <PackageProjectUrl>https://github.com/rameel/ramstack.localealignment#readme</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageTags>ICU, Unix, Linux, FreeBSD, CultureInfo, POSIX</PackageTags>
+    <PackageTags>ICU Unix Linux FreeBSD CultureInfo Locale POSIX</PackageTags>
     <IncludeSymbols>true</IncludeSymbols>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.1" PrivateAssets="all" />
+    <Using Include="System.Globalization" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MinVer" Version="7.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -42,10 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\README.md" Link="Properties\README.md">
-      <Pack>true</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
+    <None Include="README.md" Pack="true" PackagePath ="/" />
   </ItemGroup>
 
 </Project>
