@@ -2,7 +2,7 @@
 [![NuGet](https://img.shields.io/nuget/v/Ramstack.LocaleAlignment.svg)](https://nuget.org/packages/Ramstack.LocaleAlignment)
 [![MIT](https://img.shields.io/github/license/rameel/ramstack.localealignment)](https://github.com/rameel/ramstack.localealignment/blob/main/LICENSE)
 
-A small library for aligning .NET culture settings with POSIX locale user overrides on Unix-like systems.
+A small runtime helper for applying POSIX locale user overrides to .NET `CultureInfo` on Unix-like systems.
 
 ![screenshot](https://raw.githubusercontent.com/rameel/ramstack.localealignment/c3abd3eb89b4b88965dede9f4a6b1eccb1b74b21/assets/screenshot.png)
 
@@ -14,20 +14,40 @@ Category-specific overrides such as `LC_NUMERIC`, `LC_TIME`, and `LC_MONETARY` *
 This behavior is documented and discussed in the .NET runtime repository:
 * [https://github.com/dotnet/runtime/issues/110095](https://github.com/dotnet/runtime/issues/110095)
 
+## What this package does
+`Ramstack.LocaleAlignment` provides a small runtime API that explicitly aligns
+.NET culture settings with POSIX locale category overrides.
 
-## Project structure
-This repository contains two packages:
+When invoked at application startup, it:
+* Detects whether the application is running on a Unix-like platform
+* Applies the following environment variables to `CultureInfo`:
+    * `LC_NUMERIC`
+    * `LC_MONETARY`
+    * `LC_TIME`
+* Updates the current and default thread cultures
+* Respects .NET globalization invariant mode
 
-### Ramstack.LocaleAlignment
-A small runtime library that explicitly applies POSIX locale category overrides to .NET `CultureInfo`.
+Has no effect on Windows platforms.
 
-It is intended to be called manually during application startup and can be used from any .NET language (`C#`, `F#`, `Nemerle`, etc.).
 
-### Ramstack.LocaleAlignment.Generator
-A dependency-free Roslyn source generator that enables automatic locale alignment at application startup.
+## Usage
+Add the package to your project:
 
-The generator injects the equivalent of a `LocaleAlignment.Apply()` call directly into the compiled output,
-without introducing any runtime dependency or requiring any configuration.
+```bash
+dotnet add package Ramstack.LocaleAlignment
+```
+
+Call the alignment method as early as possible during application startup:
+```csharp
+LocaleAlignment.Apply();
+```
+
+> [!NOTE]
+> This package requires an explicit call.
+> If you prefer automatic initialization via source generation,
+> see [Ramstack.LocaleAlignment.Generator](https://www.nuget.org/packages/Ramstack.LocaleAlignment.Generator).
+
+No additional configuration or code changes are required.
 
 
 ## Supported versions
