@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <OutputType>Library</OutputType>
-    <Description>Source generator that applies POSIX locale user overrides to .NET CultureInfo on Unix systems.</Description>
+    <Description>Source generator that applies POSIX locale user overrides to .NET CultureInfo on Unix-like systems.</Description>
     <Nullable>enable</Nullable>
     <ImplicitUsings>true</ImplicitUsings>
     <LangVersion>latest</LangVersion>
@@ -20,7 +20,7 @@
     <PackageProjectUrl>https://github.com/rameel/ramstack.localealignment#readme</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageTags>ICU,Unix,Linux,FreeBSD,CultureInfo,Locale,POSIX</PackageTags>
+    <PackageTags>ICU Unix Linux FreeBSD CultureInfo Locale POSIX</PackageTags>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
   </PropertyGroup>
@@ -49,7 +49,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="../../README.md" Link="Properties/README.md" Pack="true" PackagePath="/" />
+    <None Include="README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 
 </Project>
