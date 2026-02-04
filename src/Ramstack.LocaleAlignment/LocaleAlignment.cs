@@ -40,7 +40,6 @@ public static class LocaleAlignment
 
     private static void ApplyCore()
     {
-        Console.WriteLine("ApplyCore");
         if (!OperatingSystem.IsWindows() && !IsGlobalizationInvariant())
         {
             //
