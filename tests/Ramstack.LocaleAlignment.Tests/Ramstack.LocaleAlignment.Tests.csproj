@@ -17,10 +17,14 @@
 
   <ItemGroup>
     <Using Include="NUnit.Framework" />
+    <Using Include="System.Globalization" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Ramstack.LocaleAlignment\Ramstack.LocaleAlignment.csproj" />
+    <Compile Include="..\..\src\Ramstack.LocaleAlignment\LocaleAlignmentImpl.cs" Link="LocaleAlignmentImpl.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Ramstack.LocaleAlignment.TestApp\Ramstack.LocaleAlignment.TestApp.csproj" />
   </ItemGroup>
 </Project>
