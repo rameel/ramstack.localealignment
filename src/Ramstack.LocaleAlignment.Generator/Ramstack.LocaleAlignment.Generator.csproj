@@ -12,6 +12,7 @@
     <IsRoslynComponent>true</IsRoslynComponent>
     <PackageType>Analyzer</PackageType>
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>
 
   <PropertyGroup>
