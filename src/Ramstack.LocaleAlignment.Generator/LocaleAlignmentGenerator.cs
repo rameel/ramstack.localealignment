@@ -140,7 +140,16 @@ public sealed class LocaleAlignmentGenerator : IIncrementalGenerator
                         if (string.Equals(name, CultureInfo.CurrentCulture.Name, StringComparison.OrdinalIgnoreCase))
                             return CultureInfo.CurrentCulture;
 
-                        return CultureInfo.GetCultureInfo(name);
+                        try
+                        {
+                            return CultureInfo.GetCultureInfo(name);
+                        }
+                        catch (CultureNotFoundException)
+                        {
+                            // An invalid value is ignored as if the variable were not set,
+                            // so it does not affect other categories
+                            return null;
+                        }
                     }
 
                     static string ToBcp47(string posix)

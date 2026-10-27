@@ -25,6 +25,7 @@ When invoked at application startup, it:
     * `LANG` defines the base culture
     * `LC_NUMERIC`, `LC_MONETARY`, and `LC_TIME` override the corresponding formats
     * `LC_ALL` takes precedence over all of them
+    * An invalid value is ignored as if the variable were not set
 * Updates the current and default thread cultures
 * Leaves the UI culture as .NET resolved it from `LC_MESSAGES`
 * Respects .NET globalization invariant mode
