@@ -1,4 +1,4 @@
-﻿namespace Ramstack.LocaleAlignment.Tests;
+namespace Ramstack.LocaleAlignment.Tests;
 
 [TestFixture]
 public class ToBcp47Tests
