@@ -45,6 +45,11 @@ public class ApplyTests
     [TestCase("LANG=ru_RU.UTF-8 LC_NUMERIC=C.UTF-8", "ru-RU", "ru-RU", "", "ru-RU", "ru-RU")]
     [TestCase("LANG=ru_RU.UTF-8 LC_NUMERIC=POSIX DOTNET_SYSTEM_GLOBALIZATION_PREDEFINED_CULTURES_ONLY=true", "ru-RU", "ru-RU", "", "ru-RU", "ru-RU")]
 
+    // An invalid value is ignored as if the variable were not set, without affecting other categories
+    [TestCase("LANG=en_US.UTF-8 LC_NUMERIC=@latin LC_TIME=ru_RU.UTF-8", "en-US", "en-US", "en-US", "en-US", "ru-RU")]
+    [TestCase("LANG=en_US.UTF-8 LC_NUMERIC=ru_RU@cyrillic LC_TIME=ru_RU.UTF-8 DOTNET_SYSTEM_GLOBALIZATION_PREDEFINED_CULTURES_ONLY=true", "en-US", "en-US", "en-US", "en-US", "ru-RU")]
+    [TestCase("LANG=_RU LC_MESSAGES=en_US.UTF-8 LC_TIME=ru_RU.UTF-8", "en-US", "en-US", "en-US", "en-US", "ru-RU")]
+
     // Globalization-invariant mode
     [TestCase("LANG=ru_RU.UTF-8 LC_NUMERIC=en_US.UTF-8 DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1", "", "", "", "", "")]
     public void Apply(string environment, string culture, string? ui, string numeric, string monetary, string time)
