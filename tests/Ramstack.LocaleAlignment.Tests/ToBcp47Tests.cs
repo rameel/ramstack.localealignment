@@ -41,5 +41,5 @@ public class ToBcp47Tests
     [TestCase("sr.UTF-8@latin9", ExpectedResult = "sr")]
     [TestCase("sr_RS.UTF-8@latin9", ExpectedResult = "sr-RS")]
     public string ToBcp47(string posix) =>
-        CultureInfoHelper.ToBcp47(posix);
+        LocaleAlignment.ToBcp47(posix);
 }

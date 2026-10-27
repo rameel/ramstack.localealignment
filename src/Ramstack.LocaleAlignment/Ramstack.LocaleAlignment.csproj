@@ -29,6 +29,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Ramstack.LocaleAlignment.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MinVer" Version="7.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>

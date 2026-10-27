@@ -18,4 +18,9 @@
   <ItemGroup>
     <Using Include="NUnit.Framework" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Ramstack.LocaleAlignment\Ramstack.LocaleAlignment.csproj" />
+    <ProjectReference Include="..\Ramstack.LocaleAlignment.TestApp\Ramstack.LocaleAlignment.TestApp.csproj" />
+  </ItemGroup>
 </Project>
