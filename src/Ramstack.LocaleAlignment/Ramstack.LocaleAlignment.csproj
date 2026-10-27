@@ -4,8 +4,8 @@
     <TargetFramework>net6.0</TargetFramework>
     <Description>Applies POSIX locale user overrides to .NET CultureInfo on Unix-like systems.</Description>
     <Nullable>enable</Nullable>
-    <ImplicitUsings>true</ImplicitUsings>
-    <LangVersion>latest</LangVersion>
+    <!-- LocaleAlignmentImpl.cs is embedded into the generated code and must compile with the default C# version of .NET 6 -->
+    <LangVersion>10</LangVersion>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
 
@@ -24,12 +24,10 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
+  <!-- The only namespaces the generated code imports for LocaleAlignmentImpl.cs -->
   <ItemGroup>
+    <Using Include="System" />
     <Using Include="System.Globalization" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <InternalsVisibleTo Include="Ramstack.LocaleAlignment.Tests" />
   </ItemGroup>
 
   <ItemGroup>
