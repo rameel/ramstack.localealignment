@@ -37,6 +37,13 @@ Add the package to your project:
 dotnet add package Ramstack.LocaleAlignment.Generator
 ```
 
+`dotnet add package` marks the reference as private, so the generator does not flow to projects that reference yours.
+If you add the reference manually, mark it the same way:
+
+```xml
+<PackageReference Include="Ramstack.LocaleAlignment.Generator" Version="..." PrivateAssets="all" />
+```
+
 No additional configuration or code changes are required.
 
 The generated initializer runs automatically at module load time.
