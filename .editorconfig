@@ -11,5 +11,22 @@ trim_trailing_whitespace = true
 indent_size = 2
 
 [*.cs]
-# Use range operator
+resharper_csharp_max_line_length = 160
+
+# Using directive options
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = true
+
+# Prefer var whenever possible
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = true:suggestion
+
+# Indentation preferences
+csharp_indent_labels = no_change
+
+# IDE0057: Use range operator
 dotnet_diagnostic.IDE0057.severity = silent
+
+# IDE0079: Remove unnecessary suppression
+dotnet_remove_unnecessary_suppression_exclusions = category:ReSharper
