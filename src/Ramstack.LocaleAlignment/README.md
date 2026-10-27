@@ -9,7 +9,8 @@ A small runtime helper for applying POSIX locale user overrides to .NET `Culture
 ## Problem
 On Unix-like systems, .NET determines the process culture using only a subset of locale-related environment variables (`LC_ALL`, `LC_MESSAGES`, `LANG`).
 
-Category-specific overrides such as `LC_NUMERIC`, `LC_TIME`, and `LC_MONETARY` **are not applied** during `CultureInfo` initialization.
+Category-specific overrides such as `LC_NUMERIC`, `LC_TIME`, and `LC_MONETARY` **are not applied** during `CultureInfo` initialization,
+and `LANG` is ignored when `LC_MESSAGES` is set.
 
 This behavior is documented and discussed in the .NET runtime repository:
 * [https://github.com/dotnet/runtime/issues/110095](https://github.com/dotnet/runtime/issues/110095)
@@ -20,11 +21,12 @@ This behavior is documented and discussed in the .NET runtime repository:
 
 When invoked at application startup, it:
 * Detects whether the application is running on a Unix-like platform
-* Applies the following environment variables to `CultureInfo`:
-    * `LC_NUMERIC`
-    * `LC_MONETARY`
-    * `LC_TIME`
+* Resolves locale categories as defined by POSIX:
+    * `LANG` defines the base culture
+    * `LC_NUMERIC`, `LC_MONETARY`, and `LC_TIME` override the corresponding formats
+    * `LC_ALL` takes precedence over all of them
 * Updates the current and default thread cultures
+* Leaves the UI culture as .NET resolved it from `LC_MESSAGES`
 * Respects .NET globalization invariant mode
 
 Has no effect on Windows platforms.

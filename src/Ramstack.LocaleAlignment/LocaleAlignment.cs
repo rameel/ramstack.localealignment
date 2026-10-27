@@ -7,22 +7,27 @@
 /// On Unix-like systems, .NET determines the process culture using only a subset
 /// of locale-related environment variables (LC_ALL, LC_MESSAGES, LANG).
 /// Category-specific overrides such as LC_NUMERIC, LC_TIME, and LC_MONETARY
-/// are not applied during <see cref="CultureInfo"/> initialization.
+/// are not applied during <see cref="CultureInfo"/> initialization,
+/// and LANG is ignored when LC_MESSAGES is set.
 /// </remarks>
 public static class LocaleAlignment
 {
     private static int s_initialized;
 
     /// <summary>
-    /// Applies POSIX locale overrides (LC_NUMERIC, LC_TIME, LC_MONETARY).
+    /// Applies POSIX locale settings (LANG, LC_NUMERIC, LC_MONETARY, LC_TIME) to the current culture.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Call this method as early as possible during application startup,
-    /// before any culture-sensitive code runs.
+    ///   Call this method as early as possible during application startup,
+    ///   before any culture-sensitive code runs.
     /// </para>
     /// <para>
-    /// It has no effect on Windows or in globalization-invariant mode.
+    ///   LC_ALL takes precedence over all other variables, as defined by POSIX.
+    ///   The UI culture is not changed and remains derived from LC_MESSAGES.
+    /// </para>
+    /// <para>
+    ///   It has no effect on Windows or in globalization-invariant mode.
     /// </para>
     /// </remarks>
     public static void Apply()
@@ -40,79 +45,70 @@ public static class LocaleAlignment
 
     private static void ApplyCore()
     {
-        if (!OperatingSystem.IsWindows() && !IsGlobalizationInvariant())
-        {
-            //
-            // LC_MONETARY must be processed after LC_NUMERIC to prevent LC_NUMERIC
-            // from overwriting currency-specific formatting overrides.
-            //
+        if (OperatingSystem.IsWindows() || IsGlobalizationInvariant())
+            return;
 
-            CultureInfo? specific = null;
-            specific = TrySet("LC_NUMERIC", specific);
-            specific = TrySetMonetary(specific);
-            specific = TrySet("LC_TIME", specific);
+        //
+        // POSIX resolves each category independently: LC_ALL, then LC_<category>, then LANG.
+        // .NET resolves a single culture the way POSIX resolves LC_MESSAGES
+        // and uses it for both CurrentCulture and CurrentUICulture.
+        //
+        // LC_ALL overrides every category, and .NET has already applied it.
+        //
 
-            if (specific is not null)
-            {
-                CultureInfo.CurrentCulture = CultureInfo.ReadOnly(specific);
-                CultureInfo.CurrentUICulture = CultureInfo.CurrentCulture;
-                CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CurrentCulture;
-                CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.CurrentCulture;
-            }
-        }
+        if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("LC_ALL")))
+            return;
 
-        static CultureInfo? TrySet(string variable, CultureInfo? specific)
-        {
-            var ci = GetCultureInfoFromEnvironment(variable);
-            if (ReferenceEquals(ci, CultureInfo.CurrentCulture))
-                return specific;
+        //
+        // As on Windows, the regional format and the display language are kept separate:
+        // CurrentCulture is based on LANG with the LC_NUMERIC, LC_MONETARY, and LC_TIME overrides,
+        // while CurrentUICulture remains as .NET resolved it from LC_MESSAGES.
+        //
 
-            specific ??= (CultureInfo)CultureInfo.CurrentCulture.Clone();
-            switch (variable)
-            {
-                case "LC_NUMERIC":
-                    specific.NumberFormat = ci.NumberFormat;
-                    break;
+        var current = CultureInfo.CurrentCulture;
+        var lang = GetCultureInfoFromEnvironment("LANG") ?? current;
+        var numeric = GetCultureInfoFromEnvironment("LC_NUMERIC") ?? lang;
+        var monetary = GetCultureInfoFromEnvironment("LC_MONETARY") ?? lang;
+        var time = GetCultureInfoFromEnvironment("LC_TIME") ?? lang;
 
-                case "LC_TIME":
-                    specific.DateTimeFormat = ci.DateTimeFormat;
-                    break;
-            }
+        if (ReferenceEquals(lang, current)
+            && ReferenceEquals(numeric, current)
+            && ReferenceEquals(monetary, current)
+            && ReferenceEquals(time, current))
+            return;
 
-            return specific;
-        }
+        //
+        // LC_MONETARY takes precedence over LC_NUMERIC for currency formatting.
+        //
 
-        static CultureInfo? TrySetMonetary(CultureInfo? specific)
-        {
-            var monetary = GetCultureInfoFromEnvironment("LC_MONETARY");
+        var nfi = (NumberFormatInfo)numeric.NumberFormat.Clone();
+        nfi.CurrencySymbol = monetary.NumberFormat.CurrencySymbol;
+        nfi.CurrencyDecimalDigits = monetary.NumberFormat.CurrencyDecimalDigits;
+        nfi.CurrencyDecimalSeparator = monetary.NumberFormat.CurrencyDecimalSeparator;
+        nfi.CurrencyGroupSeparator = monetary.NumberFormat.CurrencyGroupSeparator;
+        nfi.CurrencyGroupSizes = monetary.NumberFormat.CurrencyGroupSizes;
+        nfi.CurrencyNegativePattern = monetary.NumberFormat.CurrencyNegativePattern;
+        nfi.CurrencyPositivePattern = monetary.NumberFormat.CurrencyPositivePattern;
 
-            if (!ReferenceEquals(monetary, CultureInfo.CurrentCulture))
-                specific ??= (CultureInfo)CultureInfo.CurrentCulture.Clone();
+        var culture = (CultureInfo)lang.Clone();
+        culture.NumberFormat = nfi;
+        culture.DateTimeFormat = time.DateTimeFormat;
 
-            // Restore currency from base culture if overwritten by LC_NUMERIC,
-            // or apply new currency settings if LC_MONETARY differs from base
-            if (specific is not null)
-            {
-                specific.NumberFormat = (NumberFormatInfo)specific.NumberFormat.Clone();
-                specific.NumberFormat.CurrencySymbol = monetary.NumberFormat.CurrencySymbol;
-                specific.NumberFormat.CurrencyDecimalDigits = monetary.NumberFormat.CurrencyDecimalDigits;
-                specific.NumberFormat.CurrencyDecimalSeparator = monetary.NumberFormat.CurrencyDecimalSeparator;
-                specific.NumberFormat.CurrencyGroupSeparator = monetary.NumberFormat.CurrencyGroupSeparator;
-                specific.NumberFormat.CurrencyGroupSizes = monetary.NumberFormat.CurrencyGroupSizes;
-                specific.NumberFormat.CurrencyNegativePattern = monetary.NumberFormat.CurrencyNegativePattern;
-                specific.NumberFormat.CurrencyPositivePattern = monetary.NumberFormat.CurrencyPositivePattern;
-            }
+        CultureInfo.CurrentCulture = CultureInfo.ReadOnly(culture);
+        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CurrentCulture;
 
-            return specific;
-        }
-
-        static CultureInfo GetCultureInfoFromEnvironment(string variable)
+        static CultureInfo? GetCultureInfoFromEnvironment(string variable)
         {
             var name = Environment.GetEnvironmentVariable(variable)?.Trim();
             if (string.IsNullOrEmpty(name))
-                return CultureInfo.CurrentCulture;
+                return null;
 
             name = ToBcp47(name);
+
+            // The "C" and "POSIX" locales correspond to the invariant culture
+            if (name is "C" or "POSIX")
+                name = "";
+
             if (string.Equals(name, CultureInfo.CurrentCulture.Name, StringComparison.OrdinalIgnoreCase))
                 return CultureInfo.CurrentCulture;
 
@@ -185,13 +181,10 @@ public static class LocaleAlignment
             }
             else
             {
-                //
                 // language-modifier-territory
-                //
                 var index = name.IndexOf('_');
                 if (index > 0 && modifier.Length == 4 && (uint)modifier[0] - 'A' <= 'Z' - 'A')
                 {
-                    // SuppressMessage
                     name.Slice(0, index).TryCopyTo(buffer);
                     buffer[index] = '-';
 
@@ -203,9 +196,7 @@ public static class LocaleAlignment
                 }
                 else
                 {
-                    //
                     // language-modifier
-                    //
                     name.TryCopyTo(buffer);
                     buffer[name.Length] = '-';
                     modifier.TryCopyTo(buffer.Slice(name.Length + 1));
