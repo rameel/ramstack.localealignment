@@ -41,6 +41,9 @@ No additional configuration or code changes are required.
 
 The generated initializer runs automatically at module load time.
 
+The initializer is generated only for applications (`OutputType` set to `Exe` or `WinExe`).
+Class libraries are left unchanged, so they never override the culture chosen by the application.
+
 ## Supported versions
 
 |      | Version        |
