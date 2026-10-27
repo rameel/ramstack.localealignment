@@ -29,6 +29,9 @@ public class ApplyTests
     [TestCase("LANG=en_US.UTF-8 LC_MONETARY=ru_RU.UTF-8", "en-US", "en-US", "en-US", "ru-RU", "en-US")]
     [TestCase("LANG=en_US.UTF-8 LC_TIME=sr_RS.UTF-8@latin", "en-US", "en-US", "en-US", "en-US", "sr-Latn-RS")]
 
+    // A script without ICU data is removed instead of resolving to the root locale
+    [TestCase("LANG=en_US.UTF-8 LC_TIME=be_BY.UTF-8@latin", "en-US", "en-US", "en-US", "en-US", "be-BY")]
+
     // LANG is the base culture, while LC_MESSAGES only affects the UI culture
     [TestCase("LANG=cs_CZ.UTF-8 LC_MESSAGES=en_US.UTF-8", "cs-CZ", "en-US", "cs-CZ", "cs-CZ", "cs-CZ")]
     [TestCase("LANG=ru_RU.UTF-8 LC_MESSAGES=C", "ru-RU", "", "ru-RU", "ru-RU", "ru-RU")]
@@ -46,7 +49,7 @@ public class ApplyTests
 
     // An invalid value is ignored as if the variable were not set, without affecting other categories
     [TestCase("LANG=en_US.UTF-8 LC_NUMERIC=@latin LC_TIME=ru_RU.UTF-8", "en-US", "en-US", "en-US", "en-US", "ru-RU")]
-    [TestCase("LANG=en_US.UTF-8 LC_NUMERIC=ru_RU@cyrillic LC_TIME=ru_RU.UTF-8 DOTNET_SYSTEM_GLOBALIZATION_PREDEFINED_CULTURES_ONLY=true", "en-US", "en-US", "en-US", "en-US", "ru-RU")]
+    [TestCase("LANG=en_US.UTF-8 LC_NUMERIC=sr_HR@latin LC_TIME=ru_RU.UTF-8 DOTNET_SYSTEM_GLOBALIZATION_PREDEFINED_CULTURES_ONLY=true", "en-US", "en-US", "en-US", "en-US", "ru-RU")]
     [TestCase("LANG=_RU LC_MESSAGES=en_US.UTF-8 LC_TIME=ru_RU.UTF-8", "en-US", "en-US", "en-US", "en-US", "ru-RU")]
 
     // Globalization-invariant mode
@@ -82,6 +85,8 @@ public class ApplyTests
     [TestCase("en-US", "de-DE")]
     [TestCase("en-US", "cs-CZ")]
     [TestCase("en-US", "sr-Latn-RS")]
+    [TestCase("en-US", "be-BY")]
+    [TestCase("be-BY", "be-Latn-BY")]
     [TestCase("de-DE", "ru-RU")]
     public void Report_DistinguishesCultures(string first, string second)
     {
