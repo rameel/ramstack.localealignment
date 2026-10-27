@@ -5,7 +5,7 @@
     <Description>Applies POSIX locale user overrides to .NET CultureInfo on Unix-like systems.</Description>
     <Nullable>enable</Nullable>
     <ImplicitUsings>true</ImplicitUsings>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>latest</LangVersion>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
 
