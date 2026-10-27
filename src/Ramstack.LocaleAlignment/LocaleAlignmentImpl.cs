@@ -80,6 +80,7 @@ internal static class LocaleAlignmentImpl
                 return null;
 
             name = ToBcp47(name);
+            name = RemoveUnsupportedScript(name);
 
             // The "C" and "POSIX" locales correspond to the invariant culture
             if (name is "C" or "POSIX")
@@ -132,8 +133,17 @@ internal static class LocaleAlignmentImpl
     internal static string ToBcp47(string posix)
     {
         //
-        // Converts a POSIX-style locale string (e.g., "ff_CM.UTF-8@latin") to
-        // a BCP-47 compliant culture name (e.g., "ff-Latn-CM").
+        // Converts a POSIX locale name (e.g., "sr_RS.UTF-8@latin") to
+        // a BCP 47 language tag (e.g., "sr-Latn-RS"), the format of .NET culture names.
+        //
+        // BCP 47 (IETF Best Current Practice 47, RFC 5646) defines a language tag
+        // as hyphen-separated subtags: language[-script][-region][-variant],
+        // e.g., "en-US", "sr-Latn-RS", "ca-ES-valencia".
+        //
+        // This is a simplified conversion: the codeset is dropped, and the modifier
+        // is mapped to a script or variant subtag if known, or dropped otherwise.
+        // Note that ICU (and therefore .NET) keeps the modifier as a variant
+        // ("sr-RS-LATIN"), which loses the script and resolves to Cyrillic data.
         //
 
         if (posix.AsSpan().IndexOfAny('.', '_', '@') < 0)
@@ -224,7 +234,54 @@ internal static class LocaleAlignmentImpl
                 buffer[i] = '-';
         #endif
 
+        // Returning the same variable as the early return above
+        // lets the JIT merge both returns into one block, reducing the code size
         posix = new string(buffer);
         return posix;
+    }
+
+    internal static string RemoveUnsupportedScript(string name)
+    {
+        //
+        // ICU has no data for some language and script combinations (e.g., "be-Latn")
+        // and resolves them to the root locale, losing all language-specific data.
+        // In this case, the script is removed to keep at least the language and region
+        // data: "be-Latn-BY" -> "be-BY".
+        //
+        // Only the language and script are checked, since a culture that is not
+        // predefined itself still gets the script data through its parent:
+        // "sr-Latn-HR" falls back to "sr-Latn".
+        //
+
+        //
+        // Only a script in the second subtag matters ("be-Latn", "be-Latn-BY"),
+        // anything else is returned as is:
+        // - no language subtag: "be", ""
+        // - the second subtag is not 4 characters long, so it is a region of 2 letters
+        //   or 3 digits ("be-BY", "es-419"), a variant of 5-8 characters ("ca-valencia"),
+        //   or a singleton of an extension ("en-u-nu-thai", "en-x-test")
+        // - the second subtag starts with a digit, so it is a 4-character variant ("de-1901")
+        //
+
+        var lhs = name.IndexOf('-');
+        var rhs = name.IndexOf('-', lhs + 1);
+        if (rhs < 0)
+            rhs = name.Length;
+
+        if (lhs <= 0
+            || rhs - lhs != 5
+            || (uint)((name[lhs + 1] | 0x20) - 'a') > 'z' - 'a')
+            return name;
+
+        try
+        {
+            CultureInfo.GetCultureInfo(name[..(lhs + 5)], predefinedOnly: true);
+        }
+        catch (CultureNotFoundException)
+        {
+            name = name.Remove(lhs, 5);
+        }
+
+        return name;
     }
 }
