@@ -28,7 +28,12 @@ public sealed class LocaleAlignmentGenerator : IIncrementalGenerator
         if (compilation.Options.OutputKind is not (OutputKind.ConsoleApplication or OutputKind.WindowsApplication))
             return null;
 
-        if (compilation is CSharpCompilation csharp)
+        //
+        // The generated code embeds LocaleAlignmentImpl.cs, which is verified to compile only with C# 10.
+        // For earlier versions, nothing is generated so that the application still builds.
+        //
+
+        if (compilation is CSharpCompilation { LanguageVersion: >= LanguageVersion.CSharp10 } csharp)
             return csharp.LanguageVersion;
 
         return null;
