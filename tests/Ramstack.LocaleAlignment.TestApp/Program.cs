@@ -33,4 +33,5 @@ static void Print(string prefix, CultureInfo culture)
     Console.WriteLine($"{prefix}numeric={CultureReport.DescribeNumeric(culture)}");
     Console.WriteLine($"{prefix}monetary={CultureReport.DescribeMonetary(culture)}");
     Console.WriteLine($"{prefix}time={CultureReport.DescribeTime(culture)}");
+    Console.WriteLine($"{prefix}readonly={culture.IsReadOnly && culture.NumberFormat.IsReadOnly && culture.DateTimeFormat.IsReadOnly}");
 }

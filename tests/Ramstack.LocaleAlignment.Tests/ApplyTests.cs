@@ -32,6 +32,9 @@ public class ApplyTests
     // A script without ICU data is removed instead of resolving to the root locale
     [TestCase("LANG=en_US.UTF-8 LC_TIME=be_BY.UTF-8@latin", "en-US", "en-US", "en-US", "en-US", "be-BY")]
 
+    // A neutral culture, for which CultureInfo.ReadOnly leaves the number and date formats writable
+    [TestCase("LANG=de.UTF-8 LC_NUMERIC=ru_RU.UTF-8", "de", "de", "ru-RU", "de", "de")]
+
     // LANG is the base culture, while LC_MESSAGES only affects the UI culture
     [TestCase("LANG=cs_CZ.UTF-8 LC_MESSAGES=en_US.UTF-8", "cs-CZ", "en-US", "cs-CZ", "cs-CZ", "cs-CZ")]
     [TestCase("LANG=ru_RU.UTF-8 LC_MESSAGES=C", "ru-RU", "", "ru-RU", "ru-RU", "ru-RU")]
@@ -68,8 +71,11 @@ public class ApplyTests
             Assert.That(report["monetary"], Is.EqualTo(CultureReport.DescribeMonetary(CultureInfo.GetCultureInfo(monetary))), "monetary");
             Assert.That(report["time"], Is.EqualTo(CultureReport.DescribeTime(CultureInfo.GetCultureInfo(time))), "time");
 
+            // The culture is shared by all threads, so neither it nor its formats can be modified
+            Assert.That(report["readonly"], Is.EqualTo("True"), "read-only");
+
             // Threads that do not inherit the current culture get the same one through DefaultThreadCurrentCulture
-            foreach (var key in new[] { "culture", "numeric", "monetary", "time" })
+            foreach (var key in new[] { "culture", "numeric", "monetary", "time", "readonly" })
                 Assert.That(report["thread." + key], Is.EqualTo(report[key]), "thread " + key);
         });
     }
