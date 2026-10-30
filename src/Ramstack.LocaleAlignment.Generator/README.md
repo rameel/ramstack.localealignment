@@ -67,9 +67,7 @@ so applications that also target older frameworks, such as .NET Framework, still
 > For other .NET languages, use [Ramstack.LocaleAlignment](https://www.nuget.org/packages/Ramstack.LocaleAlignment).
 
 ## Supported versions
-|      | Version        |
-|------|----------------|
-| .NET | 6, 7, 8, 9, 10 |
+.NET 6 and later.
 
 ## Contributions
 Bug reports and contributions are welcome.

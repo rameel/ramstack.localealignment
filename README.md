@@ -62,9 +62,7 @@ dotnet add package Ramstack.LocaleAlignment.Generator
 ```
 
 ## Supported versions
-|      | Version        |
-|------|----------------|
-| .NET | 6, 7, 8, 9, 10 |
+.NET 6 and later.
 
 ## Contributions
 Bug reports and contributions are welcome.

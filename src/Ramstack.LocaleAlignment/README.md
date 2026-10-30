@@ -56,9 +56,7 @@ Only the first call has an effect. The method can be called from any .NET langua
 > does the same automatically, without an explicit call and without a runtime dependency.
 
 ## Supported versions
-|      | Version        |
-|------|----------------|
-| .NET | 6, 7, 8, 9, 10 |
+.NET 6 and later.
 
 ## Contributions
 Bug reports and contributions are welcome.
