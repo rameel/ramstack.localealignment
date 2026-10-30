@@ -66,9 +66,14 @@ internal static class LocaleAlignmentImpl
         nfi.CurrencyNegativePattern = monetary.NumberFormat.CurrencyNegativePattern;
         nfi.CurrencyPositivePattern = monetary.NumberFormat.CurrencyPositivePattern;
 
+        //
+        // CultureInfo.ReadOnly leaves NumberFormat and DateTimeFormat writable for a neutral culture,
+        // so they are made read-only explicitly.
+        //
+
         var culture = (CultureInfo)lang.Clone();
-        culture.NumberFormat = nfi;
-        culture.DateTimeFormat = time.DateTimeFormat;
+        culture.NumberFormat = NumberFormatInfo.ReadOnly(nfi);
+        culture.DateTimeFormat = DateTimeFormatInfo.ReadOnly(time.DateTimeFormat);
 
         CultureInfo.CurrentCulture = CultureInfo.ReadOnly(culture);
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CurrentCulture;
