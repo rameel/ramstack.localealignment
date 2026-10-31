@@ -75,6 +75,9 @@ public class ApplyTests
 
     // Globalization-invariant mode
     [TestCase("LANG=ru_RU.UTF-8 LC_NUMERIC=en_US.UTF-8 DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1", "", "", "", "", "")]
+
+    // Without PredefinedCulturesOnly, the mode returns cultures with the invariant data instead of rejecting them
+    [TestCase("LANG=ru_RU.UTF-8 LC_NUMERIC=en_US.UTF-8 DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 DOTNET_SYSTEM_GLOBALIZATION_PREDEFINED_CULTURES_ONLY=false", "", "", "", "", "")]
     public void Apply(string environment, string culture, string? ui, string numeric, string monetary, string time)
     {
         var report = Run(environment);
