@@ -21,7 +21,7 @@ internal static class LocaleAlignmentImpl
 
     private static void ApplyCore()
     {
-        if (OperatingSystem.IsWindows() || IsGlobalizationInvariant())
+        if (OperatingSystem.IsWindows())
             return;
 
         //
@@ -32,7 +32,20 @@ internal static class LocaleAlignmentImpl
         // LC_ALL overrides every category, and .NET has already applied it.
         //
 
-        if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("LC_ALL")))
+        if (IsSet("LC_ALL"))
+            return;
+
+        //
+        // Without any of these variables, there is nothing to align.
+        // They are checked before the globalization-invariant mode, since detecting the mode
+        // loads ICU and throws an exception in that mode, which would otherwise happen
+        // on every startup in containers that enable the mode by default.
+        //
+
+        if (!IsSet("LANG") && !IsSet("LC_NUMERIC") && !IsSet("LC_MONETARY") && !IsSet("LC_TIME"))
+            return;
+
+        if (IsGlobalizationInvariant())
             return;
 
         //
@@ -99,6 +112,9 @@ internal static class LocaleAlignmentImpl
 
         CultureInfo.CurrentCulture = CultureInfo.ReadOnly(culture);
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CurrentCulture;
+
+        static bool IsSet(string variable) =>
+            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(variable));
 
         static CultureInfo? GetCultureInfoFromEnvironment(string variable)
         {
