@@ -54,6 +54,10 @@ LocaleAlignment.Apply();
 
 Only the first call has an effect. The method can be called from any .NET language (`C#`, `F#`, `Visual Basic`, etc.).
 
+The method aligns the culture of the process it is called in. Integration tests that run the application's `Main`
+in the test process, as `WebApplicationFactory` does for the minimal hosting model, therefore align the culture
+of the test process as well.
+
 > [!NOTE]
 > For C# applications, [Ramstack.LocaleAlignment.Generator](https://www.nuget.org/packages/Ramstack.LocaleAlignment.Generator)
 > does the same automatically, without an explicit call and without a runtime dependency.

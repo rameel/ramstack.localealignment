@@ -21,7 +21,7 @@ internal static class LocaleAlignmentImpl
 
     private static void ApplyCore()
     {
-        if (OperatingSystem.IsWindows() || IsGlobalizationInvariant())
+        if (OperatingSystem.IsWindows())
             return;
 
         //
@@ -32,7 +32,20 @@ internal static class LocaleAlignmentImpl
         // LC_ALL overrides every category, and .NET has already applied it.
         //
 
-        if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("LC_ALL")))
+        if (IsSet("LC_ALL"))
+            return;
+
+        //
+        // Without any of these variables, there is nothing to align.
+        // They are checked before the globalization-invariant mode, since detecting the mode
+        // loads ICU and throws an exception in that mode, which would otherwise happen
+        // on every startup in containers that enable the mode by default.
+        //
+
+        if (!IsSet("LANG") && !IsSet("LC_NUMERIC") && !IsSet("LC_MONETARY") && !IsSet("LC_TIME"))
+            return;
+
+        if (IsGlobalizationInvariant())
             return;
 
         //
@@ -100,6 +113,9 @@ internal static class LocaleAlignmentImpl
         CultureInfo.CurrentCulture = CultureInfo.ReadOnly(culture);
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CurrentCulture;
 
+        static bool IsSet(string variable) =>
+            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(variable));
+
         static CultureInfo? GetCultureInfoFromEnvironment(string variable)
         {
             var name = Environment.GetEnvironmentVariable(variable)?.Trim();
@@ -108,6 +124,15 @@ internal static class LocaleAlignmentImpl
 
             name = ToBcp47(name);
             name = RemoveUnsupportedScript(name);
+
+            //
+            // A value without a language, such as ".UTF-8" or "@euro", leaves an empty name,
+            // which .NET resolves to the invariant culture instead of rejecting it,
+            // so it is ignored the same way as a value .NET rejects.
+            //
+
+            if (name.Length == 0)
+                return null;
 
             //
             // The "C" and "POSIX" locales correspond to the invariant culture.
@@ -228,14 +253,6 @@ internal static class LocaleAlignmentImpl
             else if (modifier.SequenceEqual("cyrillic")) modifier = "Cyrl";
             else if (modifier.SequenceEqual("devanagari")) modifier = "Deva";
             else if (modifier.SequenceEqual("latin")) modifier = "Latn";
-            // else if (modifier.SequenceEqual("adlam")) modifier = "Adlm";
-            // else if (modifier.SequenceEqual("bengali")) modifier = "Beng";
-            // else if (modifier.SequenceEqual("gurmukhi")) modifier = "Guru";
-            // else if (modifier.SequenceEqual("olchiki")) modifier = "Olck";
-            // else if (modifier.SequenceEqual("orya") || modifier.SequenceEqual("odia")) modifier = "Orya";
-            // else if (modifier.SequenceEqual("telugu")) modifier = "Telu";
-            // else if (modifier.SequenceEqual("tifinagh")) modifier = "Tfng";
-            // else if (modifier.SequenceEqual("vai")) modifier = "Vaii";
 
             // Variants
             else if (modifier.SequenceEqual("valencia")) modifier = "valencia";

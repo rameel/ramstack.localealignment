@@ -62,6 +62,10 @@ No other changes are required.
 The initializer is generated only for applications (`OutputType` set to `Exe` or `WinExe`).
 Class libraries are left unchanged, so they never override the culture chosen by the application.
 
+The initializer aligns the culture only when the application is the entry assembly of the process.
+When another process loads the application as a library, as integration tests with `WebApplicationFactory`
+or plugin hosts do, the culture of that process is left unchanged.
+
 The initializer is compiled only for .NET 6 and later,
 so applications that also target older frameworks, such as .NET Framework, still build.
 
