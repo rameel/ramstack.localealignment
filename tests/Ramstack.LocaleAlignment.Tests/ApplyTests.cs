@@ -47,6 +47,7 @@ public class ApplyTests
     [TestCase("LC_ALL= LANG=ru_RU.UTF-8", "ru-RU", null, "ru-RU", "ru-RU", "ru-RU")]
 
     // C and POSIX locales
+    [TestCase("LANG=C.UTF-8 LC_NUMERIC=ru_RU.UTF-8", "", "", "ru-RU", "", "")]
     [TestCase("LANG=ru_RU.UTF-8 LC_NUMERIC=C", "ru-RU", "ru-RU", "", "ru-RU", "ru-RU")]
     [TestCase("LANG=ru_RU.UTF-8 LC_NUMERIC=C.UTF-8", "ru-RU", "ru-RU", "", "ru-RU", "ru-RU")]
     [TestCase("LANG=ru_RU.UTF-8 LC_NUMERIC=POSIX DOTNET_SYSTEM_GLOBALIZATION_PREDEFINED_CULTURES_ONLY=true", "ru-RU", "ru-RU", "", "ru-RU", "ru-RU")]

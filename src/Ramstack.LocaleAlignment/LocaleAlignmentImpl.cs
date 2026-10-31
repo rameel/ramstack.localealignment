@@ -87,9 +87,24 @@ internal static class LocaleAlignmentImpl
             name = ToBcp47(name);
             name = RemoveUnsupportedScript(name);
 
-            // The "C" and "POSIX" locales correspond to the invariant culture
+            //
+            // The "C" and "POSIX" locales correspond to the invariant culture.
+            //
+            // On Apple platforms, .NET resolves them to the system locale instead, since GUI apps
+            // get no locale variables at all, so LANG is treated as not set to keep that culture.
+            // The categories still get the invariant culture, as .NET does not read them.
+            //
+            // https://github.com/dotnet/runtime/issues/68321
+            // https://github.com/dotnet/runtime/pull/68706
+            //
+
             if (name is "C" or "POSIX")
+            {
+                if (variable == "LANG" && (OperatingSystem.IsMacOS() || OperatingSystem.IsIOS() || OperatingSystem.IsTvOS()))
+                    return null;
+
                 name = "";
+            }
 
             if (string.Equals(name, CultureInfo.CurrentCulture.Name, StringComparison.OrdinalIgnoreCase))
                 return CultureInfo.CurrentCulture;
