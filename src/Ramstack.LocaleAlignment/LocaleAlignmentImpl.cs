@@ -55,7 +55,9 @@ internal static class LocaleAlignmentImpl
 
     private static void ApplyCore()
     {
-        if (IsGlobalizationInvariant())
+        // In the globalization-invariant mode, the current culture is always the invariant one,
+        // so the mode is detected only in this case, avoiding the ICU lookups the detection makes otherwise.
+        if (CultureInfo.CurrentCulture.Name.Length == 0 && IsGlobalizationInvariant())
             return;
 
         //
@@ -100,17 +102,7 @@ internal static class LocaleAlignmentImpl
         var dtfi = time.DateTimeFormat;
         var calendars = lang.OptionalCalendars;
         if (!IsCalendarSupported(calendars, dtfi.Calendar))
-        {
-            dtfi = (DateTimeFormatInfo)dtfi.Clone();
-            foreach (var calendar in time.OptionalCalendars)
-            {
-                if (IsCalendarSupported(calendars, calendar))
-                {
-                    dtfi.Calendar = calendar;
-                    break;
-                }
-            }
-        }
+            dtfi = WithSupportedCalendar(dtfi, calendars, time.OptionalCalendars);
 
         // CultureInfo.ReadOnly leaves NumberFormat and DateTimeFormat writable for a neutral culture,
         // so they are made read-only explicitly.
@@ -165,6 +157,26 @@ internal static class LocaleAlignmentImpl
                 // is not checked against the ICU data, so "xx-YY" is accepted.
                 return null;
             }
+        }
+
+        static DateTimeFormatInfo WithSupportedCalendar(DateTimeFormatInfo dtfi, Calendar[] calendars, Calendar[] candidates)
+        {
+            //
+            // The loop is kept out of ApplyCore, since a method with a loop takes longer to compile:
+            // .NET 6 compiles it with full optimizations instead of Tier0, and later versions instrument it.
+            //
+
+            dtfi = (DateTimeFormatInfo)dtfi.Clone();
+            foreach (var calendar in candidates)
+            {
+                if (IsCalendarSupported(calendars, calendar))
+                {
+                    dtfi.Calendar = calendar;
+                    break;
+                }
+            }
+
+            return dtfi;
         }
 
         static bool IsCalendarSupported(Calendar[] calendars, Calendar calendar)
