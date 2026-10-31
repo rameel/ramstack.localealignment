@@ -87,6 +87,8 @@ public class GeneratorTests
                 static class Environment { }
                 static class Math { }
                 static class OperatingSystem { }
+                class Calendar { }
+                class GregorianCalendar { }
                 class CultureInfo { }
                 class CultureNotFoundException { }
                 class DateTimeFormatInfo { }

@@ -36,6 +36,8 @@ Locale names are converted to .NET culture names, e.g., `sr_RS.UTF-8@latin` to `
 The resulting culture becomes `CurrentCulture` and `DefaultThreadCurrentCulture`.
 As with customized regional formats on Windows, it keeps the name of the base culture,
 so `en-US` with German formats is still `en-US`.
+Likewise, dates use a calendar the base culture supports,
+so `en-US` with Thai formats uses the Gregorian calendar rather than the Thai Buddhist one.
 
 `CurrentUICulture` is left as .NET resolved it, so the language of localized resources still follows `LC_MESSAGES`.
 

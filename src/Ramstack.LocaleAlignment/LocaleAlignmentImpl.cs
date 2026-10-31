@@ -67,13 +67,34 @@ internal static class LocaleAlignmentImpl
         nfi.CurrencyPositivePattern = monetary.NumberFormat.CurrencyPositivePattern;
 
         //
+        // .NET leaves the behavior undefined for a calendar that is not in the culture's OptionalCalendars,
+        // so the date and time formats use the first LC_TIME calendar the LANG culture supports as well,
+        // e.g., Gregorian instead of Thai Buddhist for LANG=en_US and LC_TIME=th_TH.
+        // Every culture supports the Gregorian calendar, so such a calendar is always found.
+        //
+
+        var dtfi = time.DateTimeFormat;
+        if (!IsCalendarSupported(lang, dtfi.Calendar))
+        {
+            dtfi = (DateTimeFormatInfo)dtfi.Clone();
+            foreach (var calendar in time.OptionalCalendars)
+            {
+                if (IsCalendarSupported(lang, calendar))
+                {
+                    dtfi.Calendar = calendar;
+                    break;
+                }
+            }
+        }
+
+        //
         // CultureInfo.ReadOnly leaves NumberFormat and DateTimeFormat writable for a neutral culture,
         // so they are made read-only explicitly.
         //
 
         var culture = (CultureInfo)lang.Clone();
         culture.NumberFormat = NumberFormatInfo.ReadOnly(nfi);
-        culture.DateTimeFormat = DateTimeFormatInfo.ReadOnly(time.DateTimeFormat);
+        culture.DateTimeFormat = DateTimeFormatInfo.ReadOnly(dtfi);
 
         CultureInfo.CurrentCulture = CultureInfo.ReadOnly(culture);
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CurrentCulture;
@@ -120,6 +141,18 @@ internal static class LocaleAlignmentImpl
                 // is not checked against the ICU data, so "xx-YY" is accepted
                 return null;
             }
+        }
+
+        static bool IsCalendarSupported(CultureInfo culture, Calendar calendar)
+        {
+            // Gregorian calendars with different GregorianCalendarTypes are distinct calendars in .NET
+            foreach (var supported in culture.OptionalCalendars)
+                if (supported.GetType() == calendar.GetType())
+                    if (supported is not GregorianCalendar lhs
+                        || lhs.CalendarType == ((GregorianCalendar)calendar).CalendarType)
+                        return true;
+
+            return false;
         }
 
         static bool IsGlobalizationInvariant()

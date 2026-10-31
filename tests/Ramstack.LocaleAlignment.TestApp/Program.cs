@@ -34,4 +34,15 @@ static void Print(string prefix, CultureInfo culture)
     Console.WriteLine($"{prefix}monetary={CultureReport.DescribeMonetary(culture)}");
     Console.WriteLine($"{prefix}time={CultureReport.DescribeTime(culture)}");
     Console.WriteLine($"{prefix}readonly={culture.IsReadOnly && culture.NumberFormat.IsReadOnly && culture.DateTimeFormat.IsReadOnly}");
+    Console.WriteLine($"{prefix}calendar={IsCalendarSupported(culture)}");
+}
+
+// Whether the date and time formats use one of the calendars the culture supports
+static bool IsCalendarSupported(CultureInfo culture)
+{
+    var calendar = culture.DateTimeFormat.Calendar;
+    return culture.OptionalCalendars.Any(supported =>
+        supported.GetType() == calendar.GetType()
+        && (supported is not GregorianCalendar lhs
+            || lhs.CalendarType == ((GregorianCalendar)calendar).CalendarType));
 }

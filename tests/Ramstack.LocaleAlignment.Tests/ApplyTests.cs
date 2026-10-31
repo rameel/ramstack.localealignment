@@ -30,6 +30,10 @@ public class ApplyTests
     [TestCase("LANG=en_US.UTF-8 LC_MONETARY=ru_RU.UTF-8", "en-US", "en-US", "en-US", "ru-RU", "en-US")]
     [TestCase("LANG=en_US.UTF-8 LC_TIME=sr_RS.UTF-8@latin", "en-US", "en-US", "en-US", "en-US", "sr-Latn-RS")]
 
+    // A calendar the base culture supports is kept, including a non-Gregorian one
+    [TestCase("LANG=th_TH.UTF-8 LC_NUMERIC=ru_RU.UTF-8", "th-TH", "th-TH", "ru-RU", "th-TH", "th-TH")]
+    [TestCase("LANG=th_TH.UTF-8 LC_TIME=en_US.UTF-8", "th-TH", "th-TH", "th-TH", "th-TH", "en-US")]
+
     // A script without ICU data is removed instead of resolving to the default locale
     [TestCase("LANG=en_US.UTF-8 LC_TIME=be_BY.UTF-8@latin", "en-US", "en-US", "en-US", "en-US", "be-BY")]
 
@@ -76,8 +80,41 @@ public class ApplyTests
             // The culture is shared by all threads, so neither it nor its formats can be modified
             Assert.That(report["readonly"], Is.EqualTo("True"), "read-only");
 
+            // .NET leaves the behavior undefined for a calendar the culture does not support
+            Assert.That(report["calendar"], Is.EqualTo("True"), "calendar");
+
             // Threads that do not inherit the current culture get the same one through DefaultThreadCurrentCulture
-            foreach (var key in new[] { "culture", "numeric", "monetary", "time", "readonly" })
+            foreach (var key in new[] { "culture", "numeric", "monetary", "time", "readonly", "calendar" })
+                Assert.That(report["thread." + key], Is.EqualTo(report[key]), "thread " + key);
+        });
+    }
+
+    //
+    // An LC_TIME calendar the base culture does not support is replaced with one it does,
+    // so en-US gets the Thai formats with the Gregorian calendar instead of the Thai Buddhist one.
+    //
+
+    [TestCase("en_US.UTF-8", "en-US")]
+
+    // A neutral culture, for which CultureInfo.ReadOnly leaves the date and time formats writable
+    [TestCase("en.UTF-8", "en")]
+    public void Apply_UnsupportedCalendar(string lang, string culture)
+    {
+        var report = Run($"LANG={lang} LC_TIME=th_TH.UTF-8");
+
+        var time = (CultureInfo)CultureInfo.GetCultureInfo("th-TH").Clone();
+        time.DateTimeFormat.Calendar = new GregorianCalendar();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(report["culture"], Is.EqualTo(culture), "culture");
+            Assert.That(report["time"], Is.EqualTo(CultureReport.DescribeTime(time)), "time");
+            Assert.That(report["calendar"], Is.EqualTo("True"), "calendar");
+
+            // The date and time formats are cloned to replace the calendar, so they are made read-only again
+            Assert.That(report["readonly"], Is.EqualTo("True"), "read-only");
+
+            foreach (var key in new[] { "culture", "numeric", "monetary", "time", "readonly", "calendar" })
                 Assert.That(report["thread." + key], Is.EqualTo(report[key]), "thread " + key);
         });
     }

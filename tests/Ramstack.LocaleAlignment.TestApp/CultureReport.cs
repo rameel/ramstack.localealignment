@@ -41,7 +41,8 @@ public static class CultureReport
             dtfi.LongDatePattern,
             dtfi.ShortTimePattern,
             dtfi.DayNames[1],
-            dtfi.MonthNames[0]);
+            dtfi.MonthNames[0],
+            dtfi.Calendar.GetType().Name);
     }
 
     private static string Join(params string[] values) =>
