@@ -9,6 +9,8 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <!-- The latest version whose dependencies still support .NET 6 and .NET 7 -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
     <PackageReference Include="NUnit" Version="4.4.0" />
     <PackageReference Include="NUnit.Analyzers" Version="4.7.0" />
@@ -25,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Ramstack.LocaleAlignment.Generator\Ramstack.LocaleAlignment.Generator.csproj" />
     <ProjectReference Include="..\Ramstack.LocaleAlignment.TestApp\Ramstack.LocaleAlignment.TestApp.csproj" />
   </ItemGroup>
 </Project>
