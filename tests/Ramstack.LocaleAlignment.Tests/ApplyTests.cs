@@ -181,13 +181,16 @@ public class ApplyTests
         }
 
         using var process = Process.Start(start)!;
-        var output = process.StandardOutput.ReadToEnd();
-        var error = process.StandardError.ReadToEnd();
+
+        // Both streams are read at the same time, so the app cannot block on writing
+        // to a full pipe of one stream while the other one is being read to the end
+        var output = process.StandardOutput.ReadToEndAsync();
+        var error = process.StandardError.ReadToEndAsync();
         process.WaitForExit();
 
-        Assert.That(process.ExitCode, Is.Zero, error);
+        Assert.That(process.ExitCode, Is.Zero, error.Result);
 
-        return output
+        return output.Result
             .Split('\n', StringSplitOptions.RemoveEmptyEntries)
             .Select(line => line.Split('=', 2))
             .ToDictionary(pair => pair[0], pair => pair[1]);
