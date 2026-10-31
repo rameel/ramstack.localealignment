@@ -110,6 +110,15 @@ internal static class LocaleAlignmentImpl
             name = RemoveUnsupportedScript(name);
 
             //
+            // A value without a language, such as ".UTF-8" or "@euro", leaves an empty name,
+            // which .NET resolves to the invariant culture instead of rejecting it,
+            // so it is ignored the same way as a value .NET rejects.
+            //
+
+            if (name.Length == 0)
+                return null;
+
+            //
             // The "C" and "POSIX" locales correspond to the invariant culture.
             //
             // On Apple platforms, .NET resolves them to the system locale instead, since GUI apps

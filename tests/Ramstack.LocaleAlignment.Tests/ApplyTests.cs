@@ -61,6 +61,11 @@ public class ApplyTests
     [TestCase("LANG=en_US.UTF-8 LC_NUMERIC=sr_HR@latin LC_TIME=ru_RU.UTF-8 DOTNET_SYSTEM_GLOBALIZATION_PREDEFINED_CULTURES_ONLY=true", "en-US", "en-US", "en-US", "en-US", "ru-RU")]
     [TestCase("LANG=_RU LC_MESSAGES=en_US.UTF-8 LC_TIME=ru_RU.UTF-8", "en-US", "en-US", "en-US", "en-US", "ru-RU")]
 
+    // A value without a language is ignored as well, rather than resolving to the invariant culture
+    [TestCase("LANG=ru_RU.UTF-8 LC_NUMERIC=.UTF-8 LC_MONETARY=@euro LC_TIME=@euro", "ru-RU", "ru-RU", "ru-RU", "ru-RU", "ru-RU")]
+    [TestCase("LANG=.UTF-8 LC_MESSAGES=en_US.UTF-8 LC_TIME=ru_RU.UTF-8", "en-US", "en-US", "en-US", "en-US", "ru-RU")]
+    [TestCase("LANG=@euro LC_MESSAGES=en_US.UTF-8 LC_TIME=ru_RU.UTF-8", "en-US", "en-US", "en-US", "en-US", "ru-RU")]
+
     // Globalization-invariant mode
     [TestCase("LANG=ru_RU.UTF-8 LC_NUMERIC=en_US.UTF-8 DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1", "", "", "", "", "")]
     public void Apply(string environment, string culture, string? ui, string numeric, string monetary, string time)
