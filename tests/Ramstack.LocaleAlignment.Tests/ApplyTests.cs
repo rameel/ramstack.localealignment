@@ -6,8 +6,15 @@ using Ramstack.LocaleAlignment.TestApp;
 
 namespace Ramstack.LocaleAlignment.Tests;
 
+//
+// The expected values follow how .NET resolves the locale on Linux.
+// On Apple platforms, .NET resolves the C and POSIX locales, as well as an unset locale,
+// to the system locale rather than to the invariant culture, and uses the ICU data of the system,
+// so the tests are skipped there. On Windows, Apply has no effect.
+//
+
 [TestFixture]
-[Platform(Exclude = "Win")]
+[Platform(Exclude = "Win,MacOsX", Reason = "The expected values follow how .NET resolves the locale on Linux")]
 public class ApplyTests
 {
     //
