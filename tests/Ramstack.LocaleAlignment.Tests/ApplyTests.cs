@@ -30,7 +30,7 @@ public class ApplyTests
     [TestCase("LANG=en_US.UTF-8 LC_MONETARY=ru_RU.UTF-8", "en-US", "en-US", "en-US", "ru-RU", "en-US")]
     [TestCase("LANG=en_US.UTF-8 LC_TIME=sr_RS.UTF-8@latin", "en-US", "en-US", "en-US", "en-US", "sr-Latn-RS")]
 
-    // A script without ICU data is removed instead of resolving to the root locale
+    // A script without ICU data is removed instead of resolving to the default locale
     [TestCase("LANG=en_US.UTF-8 LC_TIME=be_BY.UTF-8@latin", "en-US", "en-US", "en-US", "en-US", "be-BY")]
 
     // A neutral culture, for which CultureInfo.ReadOnly leaves the number and date formats writable
@@ -51,7 +51,7 @@ public class ApplyTests
     [TestCase("LANG=ru_RU.UTF-8 LC_NUMERIC=C.UTF-8", "ru-RU", "ru-RU", "", "ru-RU", "ru-RU")]
     [TestCase("LANG=ru_RU.UTF-8 LC_NUMERIC=POSIX DOTNET_SYSTEM_GLOBALIZATION_PREDEFINED_CULTURES_ONLY=true", "ru-RU", "ru-RU", "", "ru-RU", "ru-RU")]
 
-    // An invalid value is ignored as if the variable were not set, without affecting other categories
+    // A value that .NET rejects is ignored as if the variable were not set, without affecting other categories
     [TestCase("LANG=en_US.UTF-8 LC_NUMERIC=@latin LC_TIME=ru_RU.UTF-8", "en-US", "en-US", "en-US", "en-US", "ru-RU")]
     [TestCase("LANG=en_US.UTF-8 LC_NUMERIC=sr_HR@latin LC_TIME=ru_RU.UTF-8 DOTNET_SYSTEM_GLOBALIZATION_PREDEFINED_CULTURES_ONLY=true", "en-US", "en-US", "en-US", "en-US", "ru-RU")]
     [TestCase("LANG=_RU LC_MESSAGES=en_US.UTF-8 LC_TIME=ru_RU.UTF-8", "en-US", "en-US", "en-US", "en-US", "ru-RU")]

@@ -100,8 +100,9 @@ internal static class LocaleAlignmentImpl
             }
             catch (CultureNotFoundException)
             {
-                // An invalid value is ignored as if the variable were not set,
-                // so it does not affect other categories
+                // A value that .NET rejects is ignored as if the variable were not set,
+                // so it does not affect other categories. As in .NET, a well-formed name
+                // is not checked against the ICU data, so "xx-YY" is accepted
                 return null;
             }
         }
@@ -246,7 +247,8 @@ internal static class LocaleAlignmentImpl
     {
         //
         // ICU has no data for some language and script combinations (e.g., "be-Latn")
-        // and resolves them to the root locale, losing all language-specific data.
+        // and resolves them to the default locale, the one resolved for LC_MESSAGES,
+        // losing all language-specific data.
         // In this case, the script is removed to keep at least the language and region
         // data: "be-Latn-BY" -> "be-BY".
         //
