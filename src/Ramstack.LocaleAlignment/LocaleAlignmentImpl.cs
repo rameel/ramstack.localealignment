@@ -53,6 +53,10 @@ internal static class LocaleAlignmentImpl
         // CurrentCulture is based on LANG with the LC_NUMERIC, LC_MONETARY, and LC_TIME overrides,
         // while CurrentUICulture remains as .NET resolved it from LC_MESSAGES.
         //
+        // When LANG is not set, the base is the culture .NET resolved itself, e.g., from LC_MESSAGES,
+        // rather than the C locale POSIX uses in this case, so alignment never discards the formats
+        // .NET would use otherwise. The invariant culture is not the C locale anyway.
+        //
 
         var current = CultureInfo.CurrentCulture;
         var lang = GetCultureInfoFromEnvironment("LANG") ?? current;
