@@ -108,14 +108,11 @@ internal static class LocaleAlignmentImpl
 
         static bool IsGlobalizationInvariant()
         {
-            // https://github.com/dotnet/runtime/blob/8fafcb3251a3d2ccde36612a2eab47e9ae8ebe2b/src/libraries/System.Private.CoreLib/src/System/Globalization/GlobalizationMode.cs
-
-            if (AppContext.TryGetSwitch("System.Globalization.Invariant", out var isInvariant) && isInvariant)
-                return true;
-
-            var value = Environment.GetEnvironmentVariable("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT");
-            if (value == "1" || string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
-                return true;
+            //
+            // The mode is detected by its effect rather than from the "System.Globalization.Invariant" switch
+            // and the DOTNET_SYSTEM_GLOBALIZATION_INVARIANT variable, since the precedence between them
+            // depends on the .NET version: the switch wins up to .NET 8, and the variable since .NET 9.
+            //
 
             try
             {

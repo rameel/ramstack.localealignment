@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using System.Text.Json.Nodes;
 
 using Ramstack.LocaleAlignment.TestApp;
 
@@ -81,6 +82,28 @@ public class ApplyTests
     }
 
     //
+    // When the "System.Globalization.Invariant" switch and the DOTNET_SYSTEM_GLOBALIZATION_INVARIANT
+    // variable disagree, the switch wins up to .NET 8, and the variable since .NET 9.
+    //
+
+    [TestCase(true, "0")]
+    [TestCase(false, "1")]
+    public void Apply_InvariantSwitchAndVariableDisagree(bool invariantSwitch, string variable)
+    {
+        var invariant = Environment.Version.Major >= 9 ? variable == "1" : invariantSwitch;
+        var report = Run($"LANG=en_US.UTF-8 LC_NUMERIC=ru_RU.UTF-8 DOTNET_SYSTEM_GLOBALIZATION_INVARIANT={variable}", invariantSwitch);
+
+        var culture = invariant ? "" : "en-US";
+        var numeric = invariant ? "" : "ru-RU";
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(report["culture"], Is.EqualTo(culture), "culture");
+            Assert.That(report["numeric"], Is.EqualTo(CultureReport.DescribeNumeric(CultureInfo.GetCultureInfo(numeric))), "numeric");
+        });
+    }
+
+    //
     // The scenarios above are only meaningful if the reports of the cultures
     // they distinguish actually differ.
     //
@@ -107,7 +130,7 @@ public class ApplyTests
         });
     }
 
-    private static Dictionary<string, string> Run(string environment)
+    private static Dictionary<string, string> Run(string environment, bool? invariantSwitch = null)
     {
         var start = new ProcessStartInfo(DotNetHost)
         {
@@ -117,7 +140,31 @@ public class ApplyTests
             UseShellExecute = false
         };
 
-        start.ArgumentList.Add(Path.Combine(AppContext.BaseDirectory, "Ramstack.LocaleAlignment.TestApp.dll"));
+        var app = Path.Combine(AppContext.BaseDirectory, "Ramstack.LocaleAlignment.TestApp.dll");
+
+        if (invariantSwitch is not null)
+        {
+            //
+            // The switch is read from runtimeconfig.json, so the app runs with a copy of its own
+            // that sets the switch, the same as <InvariantGlobalization> in the project file does.
+            //
+
+            var config = JsonNode.Parse(File.ReadAllText(Path.ChangeExtension(app, ".runtimeconfig.json")))!;
+            var options = config["runtimeOptions"]!.AsObject();
+            if (options["configProperties"] is not JsonObject properties)
+                options["configProperties"] = properties = new JsonObject();
+
+            properties["System.Globalization.Invariant"] = invariantSwitch.Value;
+
+            var path = Path.ChangeExtension(app, $".Invariant{invariantSwitch.Value}.runtimeconfig.json");
+            File.WriteAllText(path, config.ToJsonString());
+
+            start.ArgumentList.Add("exec");
+            start.ArgumentList.Add("--runtimeconfig");
+            start.ArgumentList.Add(path);
+        }
+
+        start.ArgumentList.Add(app);
 
         // Start from a clean locale environment
         foreach (var name in start.Environment.Keys.ToArray())
