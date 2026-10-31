@@ -20,19 +20,13 @@ public sealed class LocaleAlignmentGenerator : IIncrementalGenerator
 
     private static LanguageVersion? GetLanguageVersion(Compilation compilation)
     {
-        //
         // Only applications get the initializer. In a library, it would run on first access
         // and override the culture the application has already chosen.
-        //
-
         if (compilation.Options.OutputKind is not (OutputKind.ConsoleApplication or OutputKind.WindowsApplication))
             return null;
 
-        //
         // The generated code embeds LocaleAlignmentImpl.cs, which is verified to compile only with C# 10.
         // For earlier versions, nothing is generated so that the application still builds.
-        //
-
         if (compilation is CSharpCompilation { LanguageVersion: >= LanguageVersion.CSharp10 } csharp)
             return csharp.LanguageVersion;
 
