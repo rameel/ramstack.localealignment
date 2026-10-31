@@ -1,5 +1,3 @@
-using System.Threading;
-
 namespace Ramstack.LocaleAlignment;
 
 /// <summary>
@@ -14,7 +12,8 @@ namespace Ramstack.LocaleAlignment;
 /// </remarks>
 public static class LocaleAlignment
 {
-    private static int s_initialized;
+    private static readonly object s_lock = new();
+    private static bool s_initialized;
 
     /// <summary>
     /// Applies POSIX locale settings (LANG, LC_NUMERIC, LC_MONETARY, LC_TIME) to the current culture.
@@ -31,10 +30,22 @@ public static class LocaleAlignment
     /// <para>
     ///   It has no effect on Windows or in globalization-invariant mode.
     /// </para>
+    /// <para>
+    ///   Only the first call has an effect. Calls made from other threads
+    ///   while it is in progress wait for it to complete.
+    /// </para>
     /// </remarks>
     public static void Apply()
     {
-        if (Interlocked.Exchange(ref s_initialized, 1) == 0)
+        lock (s_lock)
+        {
+            if (s_initialized)
+                return;
+
+            // The flag is set first, so a reentrant call on the same thread
+            // returns immediately instead of aligning the culture again
+            s_initialized = true;
             LocaleAlignmentImpl.Apply();
+        }
     }
 }

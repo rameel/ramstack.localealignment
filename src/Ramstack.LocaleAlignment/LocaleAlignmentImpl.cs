@@ -87,9 +87,24 @@ internal static class LocaleAlignmentImpl
             name = ToBcp47(name);
             name = RemoveUnsupportedScript(name);
 
-            // The "C" and "POSIX" locales correspond to the invariant culture
+            //
+            // The "C" and "POSIX" locales correspond to the invariant culture.
+            //
+            // On Apple platforms, .NET resolves them to the system locale instead, since GUI apps
+            // get no locale variables at all, so LANG is treated as not set to keep that culture.
+            // The categories still get the invariant culture, as .NET does not read them.
+            //
+            // https://github.com/dotnet/runtime/issues/68321
+            // https://github.com/dotnet/runtime/pull/68706
+            //
+
             if (name is "C" or "POSIX")
+            {
+                if (variable == "LANG" && (OperatingSystem.IsMacOS() || OperatingSystem.IsIOS() || OperatingSystem.IsTvOS()))
+                    return null;
+
                 name = "";
+            }
 
             if (string.Equals(name, CultureInfo.CurrentCulture.Name, StringComparison.OrdinalIgnoreCase))
                 return CultureInfo.CurrentCulture;
@@ -100,22 +115,20 @@ internal static class LocaleAlignmentImpl
             }
             catch (CultureNotFoundException)
             {
-                // An invalid value is ignored as if the variable were not set,
-                // so it does not affect other categories
+                // A value that .NET rejects is ignored as if the variable were not set,
+                // so it does not affect other categories. As in .NET, a well-formed name
+                // is not checked against the ICU data, so "xx-YY" is accepted
                 return null;
             }
         }
 
         static bool IsGlobalizationInvariant()
         {
-            // https://github.com/dotnet/runtime/blob/8fafcb3251a3d2ccde36612a2eab47e9ae8ebe2b/src/libraries/System.Private.CoreLib/src/System/Globalization/GlobalizationMode.cs
-
-            if (AppContext.TryGetSwitch("System.Globalization.Invariant", out var isInvariant) && isInvariant)
-                return true;
-
-            var value = Environment.GetEnvironmentVariable("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT");
-            if (value == "1" || string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
-                return true;
+            //
+            // The mode is detected by its effect rather than from the "System.Globalization.Invariant" switch
+            // and the DOTNET_SYSTEM_GLOBALIZATION_INVARIANT variable, since the precedence between them
+            // depends on the .NET version: the switch wins up to .NET 8, and the variable since .NET 9.
+            //
 
             try
             {
@@ -249,7 +262,8 @@ internal static class LocaleAlignmentImpl
     {
         //
         // ICU has no data for some language and script combinations (e.g., "be-Latn")
-        // and resolves them to the root locale, losing all language-specific data.
+        // and resolves them to the default locale, the one resolved for LC_MESSAGES,
+        // losing all language-specific data.
         // In this case, the script is removed to keep at least the language and region
         // data: "be-Latn-BY" -> "be-BY".
         //
