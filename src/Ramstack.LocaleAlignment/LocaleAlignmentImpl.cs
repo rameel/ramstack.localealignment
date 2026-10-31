@@ -253,14 +253,6 @@ internal static class LocaleAlignmentImpl
             else if (modifier.SequenceEqual("cyrillic")) modifier = "Cyrl";
             else if (modifier.SequenceEqual("devanagari")) modifier = "Deva";
             else if (modifier.SequenceEqual("latin")) modifier = "Latn";
-            // else if (modifier.SequenceEqual("adlam")) modifier = "Adlm";
-            // else if (modifier.SequenceEqual("bengali")) modifier = "Beng";
-            // else if (modifier.SequenceEqual("gurmukhi")) modifier = "Guru";
-            // else if (modifier.SequenceEqual("olchiki")) modifier = "Olck";
-            // else if (modifier.SequenceEqual("orya") || modifier.SequenceEqual("odia")) modifier = "Orya";
-            // else if (modifier.SequenceEqual("telugu")) modifier = "Telu";
-            // else if (modifier.SequenceEqual("tifinagh")) modifier = "Tfng";
-            // else if (modifier.SequenceEqual("vai")) modifier = "Vaii";
 
             // Variants
             else if (modifier.SequenceEqual("valencia")) modifier = "valencia";
