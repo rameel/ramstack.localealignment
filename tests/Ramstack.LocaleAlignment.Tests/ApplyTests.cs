@@ -83,9 +83,7 @@ public class ApplyTests
             // .NET leaves the behavior undefined for a calendar the culture does not support
             Assert.That(report["calendar"], Is.EqualTo("True"), "calendar");
 
-            // Threads that do not inherit the current culture get the same one through DefaultThreadCurrentCulture
-            foreach (var key in new[] { "culture", "numeric", "monetary", "time", "readonly", "calendar" })
-                Assert.That(report["thread." + key], Is.EqualTo(report[key]), "thread " + key);
+            AssertThreadCulture(report);
         });
     }
 
@@ -114,8 +112,7 @@ public class ApplyTests
             // The date and time formats are cloned to replace the calendar, so they are made read-only again
             Assert.That(report["readonly"], Is.EqualTo("True"), "read-only");
 
-            foreach (var key in new[] { "culture", "numeric", "monetary", "time", "readonly", "calendar" })
-                Assert.That(report["thread." + key], Is.EqualTo(report[key]), "thread " + key);
+            AssertThreadCulture(report);
         });
     }
 
@@ -166,6 +163,18 @@ public class ApplyTests
             Assert.That(CultureReport.DescribeMonetary(a), Is.Not.EqualTo(CultureReport.DescribeMonetary(b)), "monetary");
             Assert.That(CultureReport.DescribeTime(a), Is.Not.EqualTo(CultureReport.DescribeTime(b)), "time");
         });
+    }
+
+    //
+    // Threads that do not inherit the current culture get the same one through DefaultThreadCurrentCulture,
+    // so every "thread." value of the report matches the value for the current culture.
+    // The keys are listed explicitly, so a report without them fails instead of passing with nothing checked.
+    //
+
+    private static void AssertThreadCulture(Dictionary<string, string> report)
+    {
+        foreach (var key in new[] { "culture", "numeric", "monetary", "time", "readonly", "calendar" })
+            Assert.That(report["thread." + key], Is.EqualTo(report[key]), "thread " + key);
     }
 
     private static Dictionary<string, string> Run(string environment, bool? invariantSwitch = null)
