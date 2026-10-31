@@ -74,12 +74,13 @@ internal static class LocaleAlignmentImpl
         //
 
         var dtfi = time.DateTimeFormat;
-        if (!IsCalendarSupported(lang, dtfi.Calendar))
+        var calendars = lang.OptionalCalendars;
+        if (!IsCalendarSupported(calendars, dtfi.Calendar))
         {
             dtfi = (DateTimeFormatInfo)dtfi.Clone();
             foreach (var calendar in time.OptionalCalendars)
             {
-                if (IsCalendarSupported(lang, calendar))
+                if (IsCalendarSupported(calendars, calendar))
                 {
                     dtfi.Calendar = calendar;
                     break;
@@ -143,13 +144,14 @@ internal static class LocaleAlignmentImpl
             }
         }
 
-        static bool IsCalendarSupported(CultureInfo culture, Calendar calendar)
+        static bool IsCalendarSupported(Calendar[] calendars, Calendar calendar)
         {
-            // Gregorian calendars with different GregorianCalendarTypes are distinct calendars in .NET
-            foreach (var supported in culture.OptionalCalendars)
-                if (supported.GetType() == calendar.GetType())
-                    if (supported is not GregorianCalendar lhs
-                        || lhs.CalendarType == ((GregorianCalendar)calendar).CalendarType)
+            // As in the DateTimeFormatInfo.Calendar setter, a subclass counts as the calendar it derives from,
+            // and Gregorian calendars with different GregorianCalendarTypes are distinct calendars
+            foreach (var supported in calendars)
+                if (supported.GetType().IsInstanceOfType(calendar))
+                    if (supported is not GregorianCalendar gc
+                        || gc.CalendarType == ((GregorianCalendar)calendar).CalendarType)
                         return true;
 
             return false;
