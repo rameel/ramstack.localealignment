@@ -37,12 +37,22 @@ static void Print(string prefix, CultureInfo culture)
     Console.WriteLine($"{prefix}calendar={IsCalendarSupported(culture)}");
 }
 
-// Whether the date and time formats use one of the calendars the culture supports
+//
+// Whether the date and time formats use one of the calendars the culture supports.
+// The DateTimeFormatInfo.Calendar setter rejects a calendar its own culture does not support,
+// so the check is left to .NET on a new instance of the culture, since the date and time formats
+// of the culture itself may come from another one.
+//
+
 static bool IsCalendarSupported(CultureInfo culture)
 {
-    var calendar = culture.DateTimeFormat.Calendar;
-    return culture.OptionalCalendars.Any(supported =>
-        supported.GetType() == calendar.GetType()
-        && (supported is not GregorianCalendar lhs
-            || lhs.CalendarType == ((GregorianCalendar)calendar).CalendarType));
+    try
+    {
+        new CultureInfo(culture.Name).DateTimeFormat.Calendar = culture.DateTimeFormat.Calendar;
+        return true;
+    }
+    catch (ArgumentOutOfRangeException)
+    {
+        return false;
+    }
 }
