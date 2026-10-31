@@ -25,10 +25,12 @@ The generator embeds the alignment code into your application and runs it from a
 so the application gets no runtime dependency.
 
 At startup, the locale is resolved as defined by POSIX, separately for each category:
-* `LANG` defines the base culture
+* `LANG` defines the base culture. If it is not set, the base culture is the one .NET resolved itself, e.g., from `LC_MESSAGES`.
+  Unlike POSIX, which uses the C locale in this case, this keeps the formats .NET would use without alignment
 * `LC_NUMERIC`, `LC_MONETARY`, and `LC_TIME` override the number, currency, and date and time formats
 * `LC_ALL` takes precedence over all of them
-* A value that .NET rejects as a culture name, such as `@latin`, is ignored as if the variable were not set.
+* A value without a language, such as `.UTF-8`, or one that .NET rejects as a culture name, such as `@latin`,
+  is ignored as if the variable were not set.
   As in .NET, a well-formed name, such as `xx_YY`, is not checked against the ICU data
 
 Locale names are converted to .NET culture names, e.g., `sr_RS.UTF-8@latin` to `sr-Latn-RS`.
