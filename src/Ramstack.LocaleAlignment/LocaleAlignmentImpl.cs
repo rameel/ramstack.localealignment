@@ -9,42 +9,52 @@ internal static class LocaleAlignmentImpl
 {
     public static void Apply()
     {
+        //
+        // The checks that end the alignment early are kept apart from ApplyCore,
+        // so a process with nothing to align does not pay for compiling it.
+        // The JIT compiles a whole method on its first call, including the code that does not run,
+        // and ApplyCore is large.
+        //
+
         try
         {
+            if (OperatingSystem.IsWindows())
+                return;
+
+            //
+            // POSIX resolves each category independently: LC_ALL, then LC_<category>, then LANG.
+            // .NET resolves a single culture the way POSIX resolves LC_MESSAGES
+            // and uses it for both CurrentCulture and CurrentUICulture.
+            //
+            // LC_ALL overrides every category, and .NET has already applied it.
+            //
+
+            if (IsSet("LC_ALL"))
+                return;
+
+            //
+            // Without any of these variables, there is nothing to align.
+            // They are checked before the globalization-invariant mode, since detecting the mode
+            // loads ICU and throws an exception in that mode, which would otherwise happen
+            // on every startup in containers that enable the mode by default.
+            //
+
+            if (!IsSet("LANG") && !IsSet("LC_NUMERIC") && !IsSet("LC_MONETARY") && !IsSet("LC_TIME"))
+                return;
+
             ApplyCore();
         }
         catch
         {
             // Ignore errors
         }
+
+        static bool IsSet(string variable) =>
+            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(variable));
     }
 
     private static void ApplyCore()
     {
-        if (OperatingSystem.IsWindows())
-            return;
-
-        //
-        // POSIX resolves each category independently: LC_ALL, then LC_<category>, then LANG.
-        // .NET resolves a single culture the way POSIX resolves LC_MESSAGES
-        // and uses it for both CurrentCulture and CurrentUICulture.
-        //
-        // LC_ALL overrides every category, and .NET has already applied it.
-        //
-
-        if (IsSet("LC_ALL"))
-            return;
-
-        //
-        // Without any of these variables, there is nothing to align.
-        // They are checked before the globalization-invariant mode, since detecting the mode
-        // loads ICU and throws an exception in that mode, which would otherwise happen
-        // on every startup in containers that enable the mode by default.
-        //
-
-        if (!IsSet("LANG") && !IsSet("LC_NUMERIC") && !IsSet("LC_MONETARY") && !IsSet("LC_TIME"))
-            return;
-
         if (IsGlobalizationInvariant())
             return;
 
@@ -110,9 +120,6 @@ internal static class LocaleAlignmentImpl
 
         CultureInfo.CurrentCulture = CultureInfo.ReadOnly(culture);
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CurrentCulture;
-
-        static bool IsSet(string variable) =>
-            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(variable));
 
         static CultureInfo? GetCultureInfoFromEnvironment(string variable)
         {
@@ -282,17 +289,18 @@ internal static class LocaleAlignmentImpl
             }
         }
 
-        #if NET8_0_OR_GREATER
-        buffer.Replace('_', '-');
-        #else
-        for (var i = 0; i < buffer.Length; i++)
-            if (buffer[i] == '_')
-                buffer[i] = '-';
-        #endif
-
+        //
+        // The underscores are replaced in the resulting string rather than in the buffer,
+        // since Span<T>.Replace is not available before .NET 8, and a loop makes the JIT compile
+        // the method with full optimizations instead of Tier0, which takes several milliseconds
+        // at startup. .NET 6 does it for any method with a loop, and later versions for a method
+        // with both a loop and stackalloc.
+        //
         // Returning the same variable as the early return above
         // lets the JIT merge both returns into one block, reducing the code size.
-        posix = new string(buffer);
+        //
+
+        posix = new string(buffer).Replace('_', '-');
         return posix;
     }
 
