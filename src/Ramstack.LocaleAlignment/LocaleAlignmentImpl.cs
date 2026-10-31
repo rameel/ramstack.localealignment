@@ -70,10 +70,7 @@ internal static class LocaleAlignmentImpl
             && ReferenceEquals(time, current))
             return;
 
-        //
-        // LC_MONETARY takes precedence over LC_NUMERIC for currency formatting.
-        //
-
+        // LC_MONETARY takes precedence over LC_NUMERIC for currency formatting
         var nfi = (NumberFormatInfo)numeric.NumberFormat.Clone();
         nfi.CurrencySymbol = monetary.NumberFormat.CurrencySymbol;
         nfi.CurrencyDecimalDigits = monetary.NumberFormat.CurrencyDecimalDigits;
@@ -105,11 +102,8 @@ internal static class LocaleAlignmentImpl
             }
         }
 
-        //
         // CultureInfo.ReadOnly leaves NumberFormat and DateTimeFormat writable for a neutral culture,
         // so they are made read-only explicitly.
-        //
-
         var culture = (CultureInfo)lang.Clone();
         culture.NumberFormat = NumberFormatInfo.ReadOnly(nfi);
         culture.DateTimeFormat = DateTimeFormatInfo.ReadOnly(dtfi);
@@ -129,28 +123,21 @@ internal static class LocaleAlignmentImpl
             name = ToBcp47(name);
             name = RemoveUnsupportedScript(name);
 
-            //
             // A value without a language, such as ".UTF-8" or "@euro", leaves an empty name,
             // which .NET resolves to the invariant culture instead of rejecting it,
             // so it is ignored the same way as a value .NET rejects.
-            //
-
             if (name.Length == 0)
                 return null;
 
-            //
-            // The "C" and "POSIX" locales correspond to the invariant culture.
-            //
-            // On Apple platforms, .NET resolves them to the system locale instead, since GUI apps
-            // get no locale variables at all, so LANG is treated as not set to keep that culture.
-            // The categories still get the invariant culture, as .NET does not read them.
-            //
-            // https://github.com/dotnet/runtime/issues/68321
-            // https://github.com/dotnet/runtime/pull/68706
-            //
-
+            // The "C" and "POSIX" locales correspond to the invariant culture
             if (name is "C" or "POSIX")
             {
+                // On Apple platforms, .NET resolves them to the system locale instead, since GUI apps
+                // get no locale variables at all, so LANG is treated as not set to keep that culture.
+                // The categories still get the invariant culture, as .NET does not read them.
+                //
+                // https://github.com/dotnet/runtime/issues/68321
+                // https://github.com/dotnet/runtime/pull/68706
                 if (variable == "LANG" && (OperatingSystem.IsMacOS() || OperatingSystem.IsIOS() || OperatingSystem.IsTvOS()))
                     return null;
 
@@ -168,7 +155,7 @@ internal static class LocaleAlignmentImpl
             {
                 // A value that .NET rejects is ignored as if the variable were not set,
                 // so it does not affect other categories. As in .NET, a well-formed name
-                // is not checked against the ICU data, so "xx-YY" is accepted
+                // is not checked against the ICU data, so "xx-YY" is accepted.
                 return null;
             }
         }
@@ -176,7 +163,7 @@ internal static class LocaleAlignmentImpl
         static bool IsCalendarSupported(Calendar[] calendars, Calendar calendar)
         {
             // As in the DateTimeFormatInfo.Calendar setter, a subclass counts as the calendar it derives from,
-            // and Gregorian calendars with different GregorianCalendarTypes are distinct calendars
+            // and Gregorian calendars with different GregorianCalendarTypes are distinct calendars.
             foreach (var supported in calendars)
                 if (supported.GetType().IsInstanceOfType(calendar))
                     if (supported is not GregorianCalendar gc
@@ -202,7 +189,6 @@ internal static class LocaleAlignmentImpl
                 //
                 // https://learn.microsoft.com/en-us/dotnet/core/compatibility/globalization/6.0/culture-creation-invariant-mode
                 // https://learn.microsoft.com/en-us/dotnet/core/runtime-config/globalization#predefined-cultures
-
                 return CultureInfo.GetCultureInfo("en-US").NativeName.Contains("Invariant", StringComparison.Ordinal);
             }
             catch (CultureNotFoundException)
@@ -218,6 +204,10 @@ internal static class LocaleAlignmentImpl
         // Converts a POSIX locale name (e.g., "sr_RS.UTF-8@latin") to
         // a BCP 47 language tag (e.g., "sr-Latn-RS"), the format of .NET culture names.
         //
+        // A POSIX locale name has the format language[_territory][.codeset][@modifier],
+        // where every part except the language is optional,
+        // e.g., "en_IE.UTF-8@euro", "en_IE.UTF-8", "en_IE@euro", "en_IE".
+        //
         // BCP 47 (IETF Best Current Practice 47, RFC 5646) defines a language tag
         // as hyphen-separated subtags: language[-script][-region][-variant],
         // e.g., "en-US", "sr-Latn-RS", "ca-ES-valencia".
@@ -230,14 +220,6 @@ internal static class LocaleAlignmentImpl
 
         if (posix.AsSpan().IndexOfAny('.', '_', '@') < 0)
             return posix;
-
-        // Format:
-        // language[_territory][.codeset][@modifier]
-        //
-        // en_IE.UTF-8@euro - full
-        // en_IE.UTF-8      - without modifier
-        // en_IE@euro       - without codeset
-        // en_IE            - minimal
 
         var di = posix.IndexOf('.');
         if (di < 0)
@@ -277,10 +259,10 @@ internal static class LocaleAlignmentImpl
         }
         else
         {
-            // language-modifier-territory
             var index = name.IndexOf('_');
             if (index > 0 && modifier.Length == 4 && (uint)modifier[0] - 'A' <= 'Z' - 'A')
             {
+                // language-modifier-territory
                 name.Slice(0, index).TryCopyTo(buffer);
                 buffer[index] = '-';
 
@@ -292,7 +274,7 @@ internal static class LocaleAlignmentImpl
             }
             else
             {
-                // language-modifier
+                // language[-territory]-modifier
                 name.TryCopyTo(buffer);
                 buffer[name.Length] = '-';
                 modifier.TryCopyTo(buffer.Slice(name.Length + 1));
@@ -309,7 +291,7 @@ internal static class LocaleAlignmentImpl
         #endif
 
         // Returning the same variable as the early return above
-        // lets the JIT merge both returns into one block, reducing the code size
+        // lets the JIT merge both returns into one block, reducing the code size.
         posix = new string(buffer);
         return posix;
     }
@@ -326,8 +308,6 @@ internal static class LocaleAlignmentImpl
         // Only the language and script are checked, since a culture that is not
         // predefined itself still gets the script data through its parent:
         // "sr-Latn-HR" falls back to "sr-Latn".
-        //
-
         //
         // Only a script in the second subtag matters ("be-Latn", "be-Latn-BY"),
         // anything else is returned as is:

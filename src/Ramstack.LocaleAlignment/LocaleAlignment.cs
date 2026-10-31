@@ -43,7 +43,7 @@ public static class LocaleAlignment
                 return;
 
             // The flag is set first, so a reentrant call on the same thread
-            // returns immediately instead of aligning the culture again
+            // returns immediately instead of aligning the culture again.
             s_initialized = true;
             LocaleAlignmentImpl.Apply();
         }

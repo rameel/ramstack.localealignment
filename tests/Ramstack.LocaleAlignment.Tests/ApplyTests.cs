@@ -203,11 +203,8 @@ public class ApplyTests
 
         if (invariantSwitch is not null)
         {
-            //
             // The switch is read from runtimeconfig.json, so the app runs with a copy of its own
             // that sets the switch, the same as <InvariantGlobalization> in the project file does.
-            //
-
             var config = JsonNode.Parse(File.ReadAllText(Path.ChangeExtension(app, ".runtimeconfig.json")))!;
             var options = config["runtimeOptions"]!.AsObject();
             if (options["configProperties"] is not JsonObject properties)
@@ -241,7 +238,7 @@ public class ApplyTests
         using var process = Process.Start(start)!;
 
         // Both streams are read at the same time, so the app cannot block on writing
-        // to a full pipe of one stream while the other one is being read to the end
+        // to a full pipe of one stream while the other one is being read to the end.
         var output = process.StandardOutput.ReadToEndAsync();
         var error = process.StandardError.ReadToEndAsync();
         process.WaitForExit();
