@@ -21,7 +21,7 @@ US number, currency, and date formats in .NET applications, while other applicat
 This is a known limitation, discussed in [dotnet/runtime#110095](https://github.com/dotnet/runtime/issues/110095).
 
 ## What this package does
-When called at application startup, `LocaleAlignment.Apply()` resolves the locale as defined by POSIX, separately for each category:
+When called at application startup, `LocaleAligner.Apply()` resolves the locale as defined by POSIX, separately for each category:
 * `LANG` defines the base culture. If it is not set, the base culture is the one .NET resolved itself, e.g., from `LC_MESSAGES`.
   Unlike POSIX, which uses the C locale in this case, this keeps the formats .NET would use without alignment
 * `LC_NUMERIC`, `LC_MONETARY`, and `LC_TIME` override the number, currency, and date and time formats
@@ -51,7 +51,9 @@ dotnet add package Ramstack.LocaleAlignment
 
 Call the alignment method as early as possible during application startup, before any culture-sensitive code runs:
 ```csharp
-LocaleAlignment.Apply();
+using Ramstack.LocaleAlignment;
+
+LocaleAligner.Apply();
 ```
 
 Only the first call has an effect. The method can be called from any .NET language (`C#`, `F#`, `Visual Basic`, etc.).

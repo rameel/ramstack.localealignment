@@ -53,7 +53,9 @@ dotnet add package Ramstack.LocaleAlignment
 
 Call the alignment method as early as possible during application startup, before any culture-sensitive code runs:
 ```csharp
-LocaleAlignment.Apply();
+using Ramstack.LocaleAlignment;
+
+LocaleAligner.Apply();
 ```
 
 ### Ramstack.LocaleAlignment.Generator

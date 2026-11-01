@@ -9,7 +9,7 @@ using Ramstack.LocaleAlignment.TestApp;
 // culture settings as "key=value" lines for Ramstack.LocaleAlignment.Tests.
 //
 
-LocaleAlignment.Apply();
+LocaleAligner.Apply();
 
 //
 // Without the execution context, the thread does not inherit the current culture
