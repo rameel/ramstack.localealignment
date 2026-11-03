@@ -25,7 +25,11 @@ public static class LocaleAlignment
     /// </para>
     /// <para>
     ///   LC_ALL takes precedence over all other variables, as defined by POSIX.
-    ///   The UI culture is not changed and remains derived from LC_MESSAGES.
+    /// </para>
+    /// <para>
+    ///   The resulting culture is assigned to <see cref="CultureInfo.CurrentCulture"/>
+    ///   and <see cref="CultureInfo.DefaultThreadCurrentCulture"/>.
+    ///   The UI culture is left unchanged.
     /// </para>
     /// <para>
     ///   It has no effect on Windows or in globalization-invariant mode.

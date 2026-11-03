@@ -15,8 +15,8 @@ and uses it for both `CurrentCulture` and `CurrentUICulture`. As a result:
 * `LC_NUMERIC`, `LC_MONETARY`, and `LC_TIME` are ignored
 * `LANG` is ignored when `LC_MESSAGES` is set
 
-A common desktop setup, an English interface with the regional formats of another country, therefore gets
-US number, currency, and date formats in .NET applications, while other applications use the configured formats.
+For example, with `LC_MESSAGES=en_US.UTF-8` and `LANG=de_DE.UTF-8`,
+.NET applications use US number, currency, and date formats, while other applications use German formats.
 
 This is a known limitation, discussed in [dotnet/runtime#110095](https://github.com/dotnet/runtime/issues/110095).
 
@@ -25,8 +25,10 @@ When called at application startup, `LocaleAlignment.Apply()` resolves the local
 * `LANG` defines the base culture. If it is not set, the base culture is the one .NET resolved itself, e.g., from `LC_MESSAGES`.
   Unlike POSIX, which uses the C locale in this case, this keeps the formats .NET would use without alignment
 * `LC_NUMERIC`, `LC_MONETARY`, and `LC_TIME` override the number, currency, and date and time formats
-* `LC_ALL` takes precedence over all of them
-* A value without a language, such as `.UTF-8`, or one that .NET rejects as a culture name, such as `@latin`,
+* `LC_ALL` takes precedence over all of them. When it is set, alignment is skipped,
+  leaving the culture as .NET resolved it
+* In `LANG`, `LC_NUMERIC`, `LC_MONETARY`, and `LC_TIME`, a value without a language, such as `.UTF-8`,
+  or one that .NET rejects as a culture name, such as `@latin`,
   is ignored as if the variable were not set.
   As in .NET, a well-formed name, such as `xx_YY`, is not checked against the ICU data
 
@@ -38,7 +40,7 @@ so `en-US` with German formats is still `en-US`.
 Likewise, dates use a calendar the base culture supports,
 so `en-US` with Thai formats uses the Gregorian calendar rather than the Thai Buddhist one.
 
-`CurrentUICulture` is left as .NET resolved it, so the language of localized resources still follows `LC_MESSAGES`.
+`CurrentUICulture` is left unchanged.
 
 Nothing changes on Windows or in globalization-invariant mode.
 
