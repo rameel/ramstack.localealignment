@@ -63,7 +63,7 @@ internal static class LocaleAlignmentImpl
         //
         // As on Windows, the regional format and the display language are kept separate:
         // CurrentCulture is based on LANG with the LC_NUMERIC, LC_MONETARY, and LC_TIME overrides,
-        // while CurrentUICulture remains as .NET resolved it from LC_MESSAGES.
+        // while CurrentUICulture remains as .NET resolved it.
         //
         // When LANG is not set, the base is the culture .NET resolved itself, e.g., from LC_MESSAGES,
         // rather than the C locale POSIX uses in this case, so alignment never discards the formats
