@@ -9,6 +9,10 @@ using Ramstack.LocaleAlignment.TestApp;
 // culture settings as "key=value" lines for Ramstack.LocaleAlignment.Tests.
 //
 
+// The culture the application chooses before the alignment, if any
+if (Environment.GetEnvironmentVariable("TESTAPP_CULTURE") is { } preset)
+    CultureInfo.CurrentCulture = new CultureInfo(preset);
+
 LocaleAlignment.Apply();
 
 //
