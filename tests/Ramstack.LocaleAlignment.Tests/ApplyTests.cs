@@ -103,6 +103,23 @@ public class ApplyTests
     }
 
     //
+    // Without PredefinedCulturesOnly, an application in the globalization-invariant mode can choose
+    // a culture other than the invariant one before calling Apply, which still has no effect.
+    //
+
+    [Test]
+    public void Apply_InvariantMode_KeepsCultureChosenByApplication()
+    {
+        var report = Run("LANG=ru_RU.UTF-8 LC_NUMERIC=en_US.UTF-8 DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 DOTNET_SYSTEM_GLOBALIZATION_PREDEFINED_CULTURES_ONLY=false TESTAPP_CULTURE=de-DE");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(report["culture"], Is.EqualTo("de-DE"), "culture");
+            Assert.That(report["thread.culture"], Is.Empty, "thread culture");
+        });
+    }
+
+    //
     // An LC_TIME calendar the base culture does not support is replaced with one it does,
     // so en-US gets the Thai formats with the Gregorian calendar instead of the Thai Buddhist one.
     //

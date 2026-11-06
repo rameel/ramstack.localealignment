@@ -55,9 +55,10 @@ internal static class LocaleAlignmentImpl
 
     private static void ApplyCore()
     {
-        // In the globalization-invariant mode, the current culture is always the invariant one,
+        // In the globalization-invariant mode, the default culture resolved by .NET is always the invariant one,
         // so the mode is detected only in this case, avoiding the ICU lookups the detection makes otherwise.
-        if (CultureInfo.CurrentCulture.Name.Length == 0 && IsGlobalizationInvariant())
+        // CurrentCulture cannot be used for this, since the application may have already changed it.
+        if (CultureInfo.InstalledUICulture.Name.Length == 0 && IsGlobalizationInvariant())
             return;
 
         //
