@@ -33,3 +33,8 @@ dotnet_remove_unnecessary_suppression_exclusions = category:ReSharper
 
 # IDE0057: Use range operator
 dotnet_diagnostic.IDE0057.severity = silent
+
+[tests/**.cs]
+# CA1707: Identifiers should not contain underscores
+# Tests follow the Method_Condition_ExpectedResult naming convention.
+dotnet_diagnostic.CA1707.severity = none
